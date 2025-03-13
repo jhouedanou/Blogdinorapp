@@ -1,0 +1,323 @@
+<?php
+/**
+ * Twenty Twenty-Five functions and definitions.
+ *
+ * @link https://developer.wordpress.org/themes/basics/theme-functions/
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty_Five
+ * @since Twenty Twenty-Five 1.0
+ */
+
+// Adds theme support for post formats.
+if ( ! function_exists( 'twentytwentyfive_post_format_setup' ) ) :
+    /**
+     * Adds theme support for post formats.
+     *
+     * @since Twenty Twenty-Five 1.0
+     *
+     * @return void
+     */
+    function twentytwentyfive_post_format_setup() {
+        add_theme_support( 'post-formats', array( 'aside', 'audio', 'chat', 'gallery', 'image', 'link', 'quote', 'status', 'video' ) );
+    }
+endif;
+add_action( 'after_setup_theme', 'twentytwentyfive_post_format_setup' );
+
+// Enqueues editor-style.css in the editors.
+if ( ! function_exists( 'twentytwentyfive_editor_style' ) ) :
+    /**
+     * Enqueues editor-style.css in the editors.
+     *
+     * @since Twenty Twenty-Five 1.0
+     *
+     * @return void
+     */
+    function twentytwentyfive_editor_style() {
+        add_editor_style( get_parent_theme_file_uri( 'assets/css/editor-style.css' ) );
+    }
+endif;
+add_action( 'after_setup_theme', 'twentytwentyfive_editor_style' );
+
+// Enqueues style.css on the front.
+if ( ! function_exists( 'twentytwentyfive_enqueue_styles' ) ) :
+    /**
+     * Enqueues style.css on the front.
+     *
+     * @since Twenty Twenty-Five 1.0
+     *
+     * @return void
+     */
+    function twentytwentyfive_enqueue_styles() {
+        wp_enqueue_style(
+            'twentytwentyfive-style',
+            get_parent_theme_file_uri( 'style.css' ),
+            array(),
+            wp_get_theme()->get( 'Version' )
+        );
+    }
+endif;
+add_action( 'wp_enqueue_scripts', 'twentytwentyfive_enqueue_styles' );
+
+// Registers custom block styles.
+if ( ! function_exists( 'twentytwentyfive_block_styles' ) ) :
+    /**
+     * Registers custom block styles.
+     *
+     * @since Twenty Twenty-Five 1.0
+     *
+     * @return void
+     */
+    function twentytwentyfive_block_styles() {
+        register_block_style(
+            'core/list',
+            array(
+                'name'         => 'checkmark-list',
+                'label'        => __( 'Checkmark', 'twentytwentyfive' ),
+                'inline_style' => '
+                ul.is-style-checkmark-list {
+                    list-style-type: "\2713";
+                }
+                ul.is-style-checkmark-list li {
+                    padding-inline-start: 1ch;
+                }',
+            )
+        );
+    }
+endif;
+add_action( 'init', 'twentytwentyfive_block_styles' );
+
+// Registers pattern categories.
+if ( ! function_exists( 'twentytwentyfive_pattern_categories' ) ) :
+    /**
+     * Registers pattern categories.
+     *
+     * @since Twenty Twenty-Five 1.0
+     *
+     * @return void
+     */
+    function twentytwentyfive_pattern_categories() {
+        register_block_pattern_category(
+            'twentytwentyfive_page',
+            array(
+                'label'       => __( 'Pages', 'twentytwentyfive' ),
+                'description' => __( 'A collection of full page layouts.', 'twentytwentyfive' ),
+            )
+        );
+        register_block_pattern_category(
+            'twentytwentyfive_post-format',
+            array(
+                'label'       => __( 'Post formats', 'twentytwentyfive' ),
+                'description' => __( 'A collection of post format patterns.', 'twentytwentyfive' ),
+            )
+        );
+    }
+endif;
+add_action( 'init', 'twentytwentyfive_pattern_categories' );
+
+// Registers block binding sources.
+if ( ! function_exists( 'twentytwentyfive_register_block_bindings' ) ) :
+    /**
+     * Registers the post format block binding source.
+     *
+     * @since Twenty Twenty-Five 1.0
+     *
+     * @return void
+     */
+    function twentytwentyfive_register_block_bindings() {
+        register_block_bindings_source(
+            'twentytwentyfive/format',
+            array(
+                'label'              => _x( 'Post format name', 'Label for the block binding placeholder in the editor', 'twentytwentyfive' ),
+                'get_value_callback' => 'twentytwentyfive_format_binding',
+            )
+        );
+    }
+endif;
+add_action( 'init', 'twentytwentyfive_register_block_bindings' );
+
+// Registers block binding callback function for the post format name.
+if ( ! function_exists( 'twentytwentyfive_format_binding' ) ) :
+    /**
+     * Callback function for the post format name block binding source.
+     *
+     * @since Twenty Twenty-Five 1.0
+     *
+     * @return string|void Post format name, or nothing if the format is 'standard'.
+     */
+    function twentytwentyfive_format_binding() {
+        $post_format_slug = get_post_format();
+        if ( $post_format_slug && 'standard' !== $post_format_slug ) {
+            return get_post_format_string( $post_format_slug );
+        }
+    }
+endif;
+
+// Activer explicitement l'API REST WordPress
+add_filter('rest_enabled', '__return_true');
+add_filter('rest_jsonp_enabled', '__return_true');
+
+// Corriger les règles de réécriture d'URL pour l'API REST
+function fix_rest_api_url() {
+    // Cette fonction ne devrait être exécutée qu'à l'activation du thème
+    // pour éviter des problèmes de performance
+    flush_rewrite_rules();
+}
+add_action('after_switch_theme', 'fix_rest_api_url');
+
+// Permettre l'accès à l'API REST même pour les utilisateurs non connectés
+function allow_anonymous_rest_access() {
+    // Ne pas supprimer le filtre existant, juste ajouter les headers nécessaires
+    add_filter('rest_pre_serve_request', function($value) {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
+        header('Access-Control-Allow-Credentials: true');
+        header('Access-Control-Allow-Headers: Authorization, Content-Type, X-Requested-With');
+        return $value;
+    });
+}
+add_action('rest_api_init', 'allow_anonymous_rest_access', 15);
+
+// Corriger les problèmes avec certains plugins de sécurité
+add_filter('rest_authentication_errors', function($result) {
+    // Si $result est null, aucune erreur d'authentification n'a été signalée jusqu'à présent
+    if (null === $result) {
+        // Autoriser l'accès à l'API REST
+        return null;
+    }
+    return $result;
+}, 99);
+
+// Remplacer les catégories par des slugs
+function remplacer_categories_par_slugs($data, $post, $context) {
+    // Vérifier que data->data existe et que categories est défini
+    if (!isset($data->data) || !isset($data->data['categories']) || !is_array($data->data['categories'])) {
+        return $data;
+    }
+
+    $category_ids = $data->data['categories'];
+    $categories_data = [];
+
+    if (!empty($category_ids)) {
+        foreach ($category_ids as $cat_id) {
+            $category = get_category($cat_id);
+            if ($category) {
+                $categories_data[] = [
+                    'id' => $cat_id,
+                    'slug' => $category->slug,
+                    'name' => $category->name // Ajout du nom pour plus de contexte
+                ];
+            }
+        }
+
+        // Remplacer le tableau d'IDs par notre tableau personnalisé
+        $data->data['categories'] = $categories_data;
+    }
+
+    return $data;
+}
+add_filter('rest_prepare_post', 'remplacer_categories_par_slugs', 10, 3);
+
+/**
+ * Ajouter les détails de l'image mise en avant dans la réponse API REST
+ */
+function ajouter_details_image_article($data, $post, $context) {
+    // Vérifier que data->data existe
+    if (!isset($data->data)) {
+        return $data;
+    }
+
+    // Récupérer l'ID de l'image mise en avant
+    $featured_media_id = $data->data['featured_media'] ?? 0;
+
+    // Si l'article a une image mise en avant
+    if ($featured_media_id) {
+        // Récupérer les différentes tailles d'image disponibles
+        $image_sizes = get_intermediate_image_sizes();
+        $image_data = [];
+
+        // Récupérer l'URL de l'image originale
+        $full_image_url = wp_get_attachment_url($featured_media_id);
+        if ($full_image_url) {
+            $image_data['full'] = $full_image_url;
+
+            // Récupérer les URLs pour chaque taille d'image
+            foreach ($image_sizes as $size) {
+                $image = wp_get_attachment_image_src($featured_media_id, $size);
+                if ($image) {
+                    $image_data[$size] = [
+                        'url' => $image[0],
+                        'width' => $image[1],
+                        'height' => $image[2]
+                    ];
+                }
+            }
+
+            // Récupérer les métadonnées de l'image
+            $attachment = get_post($featured_media_id);
+            if ($attachment) {
+                $image_data['alt'] = get_post_meta($featured_media_id, '_wp_attachment_image_alt', true);
+                $image_data['caption'] = $attachment->post_excerpt;
+                $image_data['description'] = $attachment->post_content;
+                $image_data['title'] = $attachment->post_title;
+            }
+
+            // Ajouter les données de l'image à la réponse
+            $data->data['featured_image'] = $image_data;
+        }
+    } else {
+        // Si pas d'image mise en avant, ajouter un champ vide
+        $data->data['featured_image'] = null;
+    }
+
+    return $data;
+}
+
+// Appliquer notre fonction au filtre pour les articles
+add_filter('rest_prepare_post', 'ajouter_details_image_article', 10, 3);
+/**
+ * Ajouter l'URL de l'image mise en avant dans la réponse API REST
+ */
+function ajouter_url_image_featured_media($data, $post, $context) {
+    // Récupérer l'ID de l'image mise en avant
+    $featured_media_id = $data->data['featured_media'] ?? 0;
+
+    // Si l'article a une image mise en avant
+    if ($featured_media_id) {
+        // Récupérer l'URL de l'image originale (taille complète)
+        $image_url = wp_get_attachment_url($featured_media_id);
+
+        // Ajouter l'URL de l'image à la réponse
+        if ($image_url) {
+            $data->data['featured_media_url'] = $image_url;
+
+            // Optionnel : ajouter également des versions redimensionnées
+            $image_thumbnail = wp_get_attachment_image_src($featured_media_id, 'thumbnail');
+            $image_medium = wp_get_attachment_image_src($featured_media_id, 'medium');
+            $image_large = wp_get_attachment_image_src($featured_media_id, 'large');
+
+            if ($image_thumbnail) {
+                $data->data['featured_media_thumbnail'] = $image_thumbnail[0];
+            }
+
+            if ($image_medium) {
+                $data->data['featured_media_medium'] = $image_medium[0];
+            }
+
+            if ($image_large) {
+                $data->data['featured_media_large'] = $image_large[0];
+            }
+        }
+    } else {
+        // Si pas d'image mise en avant, ajouter des champs vides
+        $data->data['featured_media_url'] = null;
+        $data->data['featured_media_thumbnail'] = null;
+        $data->data['featured_media_medium'] = null;
+        $data->data['featured_media_large'] = null;
+    }
+
+    return $data;
+}
+
+// Appliquer notre fonction au filtre pour les articles
+add_filter('rest_prepare_post', 'ajouter_url_image_featured_media', 10, 3);

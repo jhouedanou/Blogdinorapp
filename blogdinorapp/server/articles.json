@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "date": "2025-03-13T12:00:00",
+    "slug": "premier-article",
+    "title": {
+      "rendered": "Premier article du Blog de Dinor"
+    },
+    "content": {
+      "rendered": "<p>Bienvenue sur le Blog de Dinor ! Ce premier article marque le début d'une série de publications passionnantes.</p><p>Restez à l'écoute pour plus de contenu !</p>"
+    },
+    "excerpt": {
+      "rendered": "<p>Bienvenue sur le Blog de Dinor ! Ce premier article marque le début d'une série de publications passionnantes.</p>"
+    }
+  },
+  {
+    "id": 2,
+    "date": "2025-03-12T10:30:00",
+    "slug": "deuxieme-article",
+    "title": {
+      "rendered": "Les astuces de Dinor"
+    },
+    "content": {
+      "rendered": "<p>Dans cet article, nous allons découvrir ensemble les meilleures astuces de Dinor pour réussir.</p><p>Suivez ces conseils et vous verrez une différence immédiate !</p>"
+    },
+    "excerpt": {
+      "rendered": "<p>Dans cet article, nous allons découvrir ensemble les meilleures astuces de Dinor pour réussir.</p>"
+    }
+  },
+  {
+    "id": 3,
+    "date": "2025-03-10T15:45:00",
+    "slug": "troisieme-article",
+    "title": {
+      "rendered": "L'histoire de Dinor"
+    },
+    "content": {
+      "rendered": "<p>Découvrez l'histoire fascinante de Dinor, de ses débuts modestes à son succès d'aujourd'hui.</p><p>Un parcours inspirant qui vous motivera à poursuivre vos propres rêves.</p>"
+    },
+    "excerpt": {
+      "rendered": "<p>Découvrez l'histoire fascinante de Dinor, de ses débuts modestes à son succès d'aujourd'hui.</p>"
+    }
+  }
+]
