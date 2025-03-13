@@ -1,0 +1,19 @@
+{
+  "name": "nuxt3-blog",
+  "version": "1.0.0",
+  "description": "A blog built with Nuxt 3 and powered by a WordPress backend.",
+  "author": "Your Name",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  },
+  "dependencies": {
+    "nuxt": "^3.0.0",
+    "@nuxt/content": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^16.0.0"
+  }
+}
