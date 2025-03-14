@@ -4,11 +4,6 @@
     
     <div class="container">
       <div class="header-actions">
-        <button v-if="!loading" @click="refreshData" class="refresh-btn" :class="{'refreshing': isRefreshing}">
-          <span class="refresh-icon">↻</span>
-          <span class="refresh-text">{{ isRefreshing ? 'Rafraîchissement...' : 'Rafraîchir' }}</span>
-        </button>
-        
         <div v-if="activeCategory" class="active-filter">
           <span class="filter-label">Filtré par : </span>
           <span class="filter-value">{{ formatCategoryName(activeCategory) }}</span>
@@ -93,6 +88,12 @@
         </div>
       </div>
     </div>
+    
+    <!-- Bouton flottant pour rafraîchir -->
+    <button v-if="!loading" @click="refreshData" class="floating-btn refresh-floating-btn" :class="{'refreshing': isRefreshing}" aria-label="Rafraîchir les articles">
+      <span class="refresh-icon">↻</span>
+      <span class="btn-tooltip">{{ isRefreshing ? 'Rafraîchissement...' : 'Rafraîchir' }}</span>
+    </button>
   </div>
 </template>
 
@@ -660,6 +661,70 @@ watch(() => route.query.category, (newCategory) => {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+  }
+}
+
+/* Styles pour le bouton flottant */
+.floating-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.floating-btn:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.floating-btn .refresh-icon {
+  font-size: 24px;
+  margin: 0;
+}
+
+.refreshing .refresh-icon {
+  animation: spin 1s linear infinite;
+}
+
+.btn-tooltip {
+  position: absolute;
+  right: 70px;
+  background: #333;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.floating-btn:hover .btn-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Pour les écrans mobiles */
+@media (max-width: 768px) {
+  .floating-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
   }
 }
 </style>

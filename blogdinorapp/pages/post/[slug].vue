@@ -4,13 +4,7 @@
     
     <div class="container">
       <div class="header-actions">
-        <button class="back-button" @click="goBack">
-          <span class="back-icon">←</span> Retour
-        </button>
-        <button v-if="!loading" @click="refreshData" class="refresh-btn" :class="{'refreshing': isRefreshing}">
-          <span class="refresh-icon">↻</span>
-          <span class="refresh-text">{{ isRefreshing ? 'Rafraîchissement...' : 'Rafraîchir' }}</span>
-        </button>
+        <!-- Supprimé les boutons "Retour" et "Rafraîchir" -->
       </div>
 
       <div v-if="loading" class="loading">
@@ -44,6 +38,18 @@
         <div class="post-content" v-html="post.content"></div>
       </article>
     </div>
+    
+    <!-- Bouton flottant pour revenir en arrière -->
+    <button class="floating-btn back-floating-btn" @click="goBack" aria-label="Retour à la liste des articles">
+      <span class="back-icon">←</span>
+      <span class="btn-tooltip">Retour</span>
+    </button>
+    
+    <!-- Bouton flottant pour rafraîchir -->
+    <button v-if="!loading" @click="refreshData" class="floating-btn refresh-floating-btn" :class="{'refreshing': isRefreshing}" aria-label="Rafraîchir l'article">
+      <span class="refresh-icon">↻</span>
+      <span class="btn-tooltip">{{ isRefreshing ? 'Rafraîchissement...' : 'Rafraîchir' }}</span>
+    </button>
   </div>
 </template>
 
@@ -401,6 +407,95 @@ const featuredImage = computed(() => {
   
   .post-content {
     font-size: 1rem;
+  }
+}
+
+/* Styles pour les boutons flottants */
+.floating-btn {
+  position: fixed;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.back-floating-btn {
+  bottom: 30px;
+  left: 30px;
+}
+
+.refresh-floating-btn {
+  bottom: 30px;
+  right: 30px;
+}
+
+.floating-btn:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.floating-btn .back-icon,
+.floating-btn .refresh-icon {
+  font-size: 24px;
+  margin: 0;
+}
+
+.refreshing .refresh-icon {
+  animation: spin 1s linear infinite;
+}
+
+.btn-tooltip {
+  position: absolute;
+  background: #333;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.back-floating-btn .btn-tooltip {
+  left: 70px;
+  transform: translateX(-10px);
+}
+
+.refresh-floating-btn .btn-tooltip {
+  right: 70px;
+  transform: translateX(10px);
+}
+
+.floating-btn:hover .btn-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Ajustements pour les écrans mobiles */
+@media (max-width: 768px) {
+  .floating-btn {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .back-floating-btn {
+    bottom: 20px;
+    left: 20px;
+  }
+  
+  .refresh-floating-btn {
+    bottom: 20px;
+    right: 20px;
   }
 }
 </style>
