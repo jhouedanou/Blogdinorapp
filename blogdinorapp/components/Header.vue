@@ -4,10 +4,13 @@
       <div class="header-content">
         <div class="logo-wrapper">
           <NuxtLink to="/" class="logo-link">
-            <div class="logo">
-              <span class="logo-text">B</span>
-            </div>
-            <span class="site-name">Blog Dinor</span>
+          <NuxtImg
+            :src="'/images/logo.jpg'"
+            :alt="siteName"
+            width="40"
+            height="40"
+            class="logo"
+          />
           </NuxtLink>
         </div>
         
@@ -62,7 +65,7 @@ const resetCategoryFilter = () => {
 
 <style scoped>
 .site-header {
-  background: white;
+  background: var(--white);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
@@ -93,20 +96,25 @@ const resetCategoryFilter = () => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--white);
   font-weight: 800;
   font-size: 1.5rem;
-  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 2px 6px rgba(54, 32, 27, 0.4);
+}
+
+.logo-text {
+  color: var(--white);
+  font-weight: 800;
 }
 
 .site-name {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #2d3748;
+  color: var(--text-primary);
 }
 
 .site-nav {
@@ -118,14 +126,14 @@ const resetCategoryFilter = () => {
   font-size: 1rem;
   font-weight: 600;
   text-decoration: none;
-  color: #4a5568;
+  color: var(--text-primary);
   position: relative;
   padding: 6px 0;
   transition: color 0.3s ease;
 }
 
 .nav-link:hover {
-  color: #6366f1;
+  color: var(--primary);
 }
 
 .nav-link::after {
@@ -135,7 +143,7 @@ const resetCategoryFilter = () => {
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
   transition: width 0.3s ease;
 }
 
@@ -145,7 +153,7 @@ const resetCategoryFilter = () => {
 }
 
 .nav-link.active {
-  color: #6366f1;
+  color: var(--primary);
 }
 
 @media (max-width: 768px) {

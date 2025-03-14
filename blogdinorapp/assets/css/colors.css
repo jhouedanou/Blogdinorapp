@@ -1,0 +1,38 @@
+/* Palette de couleurs du site */
+:root {
+  --lion: #b99b76;
+  --white: #ffffff;
+  --champagne-pink: #e6d5c8;
+  --dark-goldenrod: #a2812e;
+  --imperial-red: #e04643;
+  --bistre: #36201b;
+  --falu-red: #7c2823;
+  
+  /* Nouvelles couleurs demandées */
+  --primary-red: #D91E1E;
+  --secondary-red: #730E0E;
+  --link-gold: #A67924;
+  --button-gold: #A6841F;
+  --subtle-gray: #6E7173;
+
+  /* Variables fonctionnelles */
+  --primary: var(--primary-red);
+  --secondary: var(--secondary-red);
+  --accent: var(--imperial-red);
+  --background: var(--white);
+  --text-primary: var(--bistre);
+  --text-secondary: var(--falu-red);
+  --text-light: var(--champagne-pink);
+  --border-color: var(--champagne-pink);
+  --button-hover: var(--secondary-red);
+  --link-color: var(--link-gold);
+  --button-read-more: var(--button-gold);
+  --card-background: var(--white);
+  --header-background: var(--bistre);
+  --footer-background: var(--bistre);
+  --category-badge: var(--primary-red);
+  --progress-bar-start: var(--primary-red);
+  --progress-bar-end: var(--secondary-red);
+  --no-image-gradient-start: var(--primary-red);
+  --no-image-gradient-end: var(--secondary-red);
+}

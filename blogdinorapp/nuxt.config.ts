@@ -5,6 +5,21 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/image',
   ],
+  css: [
+    '~/assets/css/colors.css',
+    '~/assets/css/global.css',
+  ],
+  app: {
+    head: {
+      title: 'Blog de Dinor App',
+      meta: [
+        { name: 'description', content: 'Blog officiel de Dinor App avec des articles sur la cuisine, les recettes et plus encore.' },
+      ],
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      ]
+    }
+  },
   image: {
     domains: ['bigfive.dev', 'secure.gravatar.com'],
     alias: {
@@ -24,6 +39,9 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: process.env.API_BASE || 'https://bigfive.dev/blogdinor',
+      wordpress: {
+        apiBase: process.env.API_BASE || 'https://bigfive.dev/blogdinor'
+      }
     }
   }
 })

@@ -19,33 +19,30 @@
       <div v-else>
         <transition-group name="post-list" tag="div" class="posts-grid">
           <div v-for="(post, index) in posts" :key="post.id" class="post-card" @click="goToPost(post.slug)" :style="{ '--i': index }">
-            <div class="post-image">
+            <div class="post-image-container">
               <nuxt-img 
                 v-if="post.thumbnail" 
                 :src="post.thumbnail" 
-                width="400"
-                height="250"
-                placeholder
+                width="340"
+                height="180"
+                quality="90"
                 format="webp"
-                loading="lazy"
                 :alt="post.title"
               />
               <div v-else class="no-image">Pas d'image</div>
-              
-              <!-- Titre en position absolute sur l'image -->
-              <h2 class="post-title-overlay" v-html="post.title"></h2>
+              <h3 class="post-title-overlay" v-html="formatTitle(post.title)"></h3>
             </div>
-            <div class="post-content">
-              <div class="post-meta">
-                <div class="post-date">{{ formatDate(post.date) }}</div>
-                <div v-if="post.categories && post.categories.length" class="post-categories">
-                  <span v-for="(category, idx) in post.categories" :key="idx" class="post-category">
-                    {{ category.name }}
-                  </span>
-                </div>
+            <div class="post-meta">
+              <span class="post-date">{{ formatDate(post.date) }}</span>
+              <div v-if="post.categories && post.categories.length" class="post-categories">
+                <span v-for="category in post.categories" :key="category.id" class="category-badge">
+                  {{ category.name }}
+                </span>
               </div>
-              <div class="post-excerpt" v-html="post.excerpt"></div>
-              <div class="post-read-more">Lire la suite <span class="arrow">→</span></div>
+            </div>
+            <div class="post-excerpt" v-html="formatExcerpt(post.excerpt)"></div>
+            <div class="post-footer">
+              <nuxt-link :to="`/post/${post.slug}`" class="read-more-btn">Lire plus</nuxt-link>
             </div>
           </div>
         </transition-group>
@@ -105,6 +102,10 @@
       <span class="refresh-icon">↻</span>
       <span class="btn-tooltip">{{ isRefreshing ? 'Rafraîchissement...' : 'Rafraîchir' }}</span>
     </button>
+    <button v-if="!loading" @click="goBack" class="floating-btn back-floating-btn" aria-label="Retour">
+      <span class="back-icon">⇐</span>
+      <span class="btn-tooltip">Retour</span>
+    </button>
   </div>
 </template>
 
@@ -137,6 +138,9 @@ const {
 
 const isRefreshing = ref(false);
 
+// Mode debug désactivé en production
+const debug = ref(false);
+
 onBeforeMount(() => {
   // Vérifier si une catégorie est présente dans l'URL
   const { category } = route.query;
@@ -147,6 +151,13 @@ onBeforeMount(() => {
 
 onMounted(async () => {
   await fetchPosts();
+  
+  // Obtenir les données brutes pour le premier article
+  if (posts.value && posts.value.length > 0) {
+    console.log('Premier article:', posts.value[0]);
+    console.log('Type du titre:', typeof posts.value[0].title);
+    console.log('Titre brut:', posts.value[0].title);
+  }
 });
 
 const refreshData = async () => {
@@ -168,8 +179,13 @@ const goToPost = (slug) => {
 };
 
 const formatDate = (dateString) => {
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString('fr-FR', options);
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  }).format(date);
 };
 
 const clearFilter = () => {
@@ -178,13 +194,85 @@ const clearFilter = () => {
 };
 
 const formatCategoryName = (slug) => {
-  if (!slug) return '';
+  switch (slug) {
+    case 'recette':
+      return 'Recettes';
+    case 'top-10':
+      return 'Top 10';
+    default:
+      return slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ');
+  }
+};
+
+const formatExcerpt = (excerpt) => {
+  if (!excerpt) return '';
   
-  // Convertir le format "top-10" en "Top 10" par exemple
-  return slug
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  // Décoder les entités HTML pour les caractères accentués
+  let formattedExcerpt = excerpt
+    .replace(/&eacute;/g, 'é')
+    .replace(/&egrave;/g, 'è')
+    .replace(/&agrave;/g, 'à')
+    .replace(/&ccedil;/g, 'ç')
+    .replace(/&ecirc;/g, 'ê')
+    .replace(/&ocirc;/g, 'ô')
+    .replace(/&ucirc;/g, 'û')
+    .replace(/&icirc;/g, 'î')
+    .replace(/&euml;/g, 'ë')
+    .replace(/&iuml;/g, 'ï')
+    .replace(/&uuml;/g, 'ü')
+    .replace(/&acirc;/g, 'â')
+    .replace(/&ugrave;/g, 'ù')
+    .replace(/&Eacute;/g, 'É')
+    .replace(/&Egrave;/g, 'È')
+    .replace(/&Agrave;/g, 'À')
+    .replace(/&Ccedil;/g, 'Ç')
+    .replace(/&nbsp;/g, ' ');
+  
+  // Nettoyer les balises en trop
+  formattedExcerpt = formattedExcerpt
+    .replace(/<p>/g, '')
+    .replace(/<\/p>/g, '')
+    .replace(/\[&hellip;\]/g, '...')
+    .replace(/\[…\]/g, '...')
+    .replace(/\.\.\.<\/p>/g, '...')
+    .replace(/\s+/g, ' ')
+    .trim();
+  
+  // Limiter la longueur de l'extrait
+  if (formattedExcerpt.length > 150) {
+    formattedExcerpt = formattedExcerpt.substring(0, 150) + '...';
+  }
+  
+  return formattedExcerpt;
+};
+
+const formatTitle = (title) => {
+  if (!title) return '';
+  
+  // Décoder les entités HTML pour les caractères accentués et les apostrophes
+  return title
+    .replace(/&rsquo;/g, "'")
+    .replace(/&lsquo;/g, "'")
+    .replace(/&rdquo;/g, "\"")
+    .replace(/&ldquo;/g, "\"")
+    .replace(/&eacute;/g, 'é')
+    .replace(/&egrave;/g, 'è')
+    .replace(/&agrave;/g, 'à')
+    .replace(/&ccedil;/g, 'ç')
+    .replace(/&ecirc;/g, 'ê')
+    .replace(/&ocirc;/g, 'ô')
+    .replace(/&ucirc;/g, 'û')
+    .replace(/&icirc;/g, 'î')
+    .replace(/&euml;/g, 'ë')
+    .replace(/&iuml;/g, 'ï')
+    .replace(/&uuml;/g, 'ü')
+    .replace(/&acirc;/g, 'â')
+    .replace(/&ugrave;/g, 'ù')
+    .replace(/&Eacute;/g, 'É')
+    .replace(/&Egrave;/g, 'È')
+    .replace(/&Agrave;/g, 'À')
+    .replace(/&Ccedil;/g, 'Ç')
+    .replace(/&nbsp;/g, ' ');
 };
 
 // Calculer le nombre total d'articles
@@ -259,9 +347,14 @@ watch(() => route.query.category, (newCategory) => {
     clearCategoryFilter();
   }
 });
+
+const goBack = () => {
+  router.go(-1);
+};
 </script>
 
 <style scoped>
+/* Styles généraux */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -402,14 +495,15 @@ watch(() => route.query.category, (newCategory) => {
 }
 
 .post-card {
-  border-radius: 16px;
+  background-color: var(--card-background);
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  background: white;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   position: relative;
-  cursor: pointer;
-  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .post-card:hover {
@@ -443,38 +537,34 @@ watch(() => route.query.category, (newCategory) => {
   opacity: 0.05;
 }
 
-.post-image {
+.post-image-container {
   position: relative;
-  width: 100%;
-  height: 250px;
   overflow: hidden;
-  border-radius: 12px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  aspect-ratio: 16 / 9;
 }
 
-.post-image img,
-.post-image .nuxt-img {
+.post-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
 }
 
-.post-card:hover .post-image img,
-.post-card:hover .post-image .nuxt-img {
+.post-card:hover .post-image {
   transform: scale(1.05);
 }
 
 .no-image {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
-  color: white;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--no-image-gradient-start), var(--no-image-gradient-end));
+  min-height: 180px;
 }
 
 .post-content {
@@ -505,9 +595,10 @@ watch(() => route.query.category, (newCategory) => {
   font-size: 0.7rem;
   padding: 3px 8px;
   border-radius: 20px;
-  background-color: rgba(99, 102, 241, 0.1);
-  color: #6366f1;
+  background-color: var(--category-badge);
+  color: var(--white);
   font-weight: 600;
+  opacity: 0.8;
 }
 
 .post-read-more {
@@ -543,7 +634,9 @@ watch(() => route.query.category, (newCategory) => {
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
+  text-align: left;
 }
 
 .post-card:hover .post-title-overlay {
@@ -699,23 +792,46 @@ watch(() => route.query.category, (newCategory) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
+  background: var(--primary);
   color: white;
   border: none;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   z-index: 10;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  font-size: 24px;
+}
+
+.back-floating-btn {
+  right: 100px;
+  background: var(--bistre);
+}
+
+.refresh-floating-btn {
+  background: var(--primary-red);
 }
 
 .floating-btn:hover {
   transform: translateY(-5px) scale(1.05);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  filter: brightness(1.1);
 }
 
-.floating-btn .refresh-icon {
+.floating-btn:active {
+  transform: translateY(0) scale(0.95);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.floating-btn .refresh-icon,
+.floating-btn .back-icon {
   font-size: 24px;
   margin: 0;
+  transition: transform 0.3s ease;
+}
+
+.floating-btn:hover .refresh-icon,
+.floating-btn:hover .back-icon {
+  transform: scale(1.2);
 }
 
 .refreshing .refresh-icon {
@@ -725,16 +841,29 @@ watch(() => route.query.category, (newCategory) => {
 .btn-tooltip {
   position: absolute;
   right: 70px;
-  background: #333;
+  background: rgba(0, 0, 0, 0.8);
   color: white;
-  padding: 5px 12px;
-  border-radius: 4px;
+  padding: 8px 15px;
+  border-radius: 6px;
   font-size: 0.9rem;
+  font-weight: 500;
   white-space: nowrap;
   opacity: 0;
   transform: translateX(10px);
   transition: all 0.3s ease;
   pointer-events: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.back-floating-btn .btn-tooltip {
+  right: auto;
+  left: 70px;
+  transform: translateX(-10px);
+}
+
+.back-floating-btn:hover .btn-tooltip {
+  transform: translateX(0);
+  opacity: 1;
 }
 
 .floating-btn:hover .btn-tooltip {
@@ -746,9 +875,94 @@ watch(() => route.query.category, (newCategory) => {
 @media (max-width: 768px) {
   .floating-btn {
     bottom: 20px;
-    right: 20px;
     width: 50px;
     height: 50px;
+    font-size: 20px;
   }
+  
+  .refresh-floating-btn {
+    right: 20px;
+  }
+  
+  .back-floating-btn {
+    right: auto;
+    left: 20px;
+  }
+  
+  .btn-tooltip {
+    display: none; /* Masquer les tooltips sur mobile pour économiser de l'espace */
+  }
+}
+
+/* Style pour l'extrait */
+.post-excerpt {
+  margin: 15px 0;
+  padding: 0 15px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #555;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  text-align: left;
+}
+
+/* Style pour la catégorie */
+.category-badge {
+  display: inline-block;
+  background-color: var(--primary);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  font-weight: 500;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Style pour la date */
+.post-date {
+  font-size: 0.85rem;
+  color: #777;
+  margin-right: 10px;
+}
+
+/* Style pour les métadonnées */
+.post-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0 15px;
+  margin-top: 10px;
+  gap: 5px;
+}
+
+/* Style pour le footer de la carte */
+.post-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 15px 15px;
+}
+
+/* Style pour le bouton "Lire plus" */
+.read-more-btn {
+  display: inline-block;
+  background-color: var(--button-read-more);
+  color: var(--white);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.read-more-btn:hover {
+  background-color: var(--button-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 </style>

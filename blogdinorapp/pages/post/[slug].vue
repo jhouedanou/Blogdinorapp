@@ -2,6 +2,11 @@
   <div>
     <Header />
     
+    <!-- Barre de progression de lecture -->
+    <div class="reading-progress-container">
+      <div class="reading-progress-bar" :style="{ width: readingProgress + '%' }"></div>
+    </div>
+    
     <div class="container">
       <div class="header-actions">
         <!-- Supprimé les boutons "Retour" et "Rafraîchir" -->
@@ -31,7 +36,7 @@
           <h1 class="post-title" v-html="post.title"></h1>
         </header>
 
-        <div v-if="featuredImage" class="post-featured-image">
+        <div v-if="featuredImage" class="post-image-container">
           <nuxt-img 
             :src="featuredImage" 
             :alt="post.title" 
@@ -42,6 +47,9 @@
             loading="eager"
             sizes="sm:100vw md:800px lg:900px"
           />
+        </div>
+        <div v-else class="post-no-image">
+          <div class="no-image-label">Pas d'image disponible</div>
         </div>
 
         <div class="post-content" v-html="enhancePostContent(post.content)"></div>
@@ -63,14 +71,46 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useHead } from '#imports';
 import { useRoute } from 'vue-router';
 import useBlog from '../../composables/useBlog';
 import Header from '../../components/Header.vue';
 
 const route = useRoute();
-const { post, loading, fetchPostBySlug, getCategoryName, refreshCache } = useBlog();
+const { posts, loading, error, fetchPostBySlug, refreshCache } = useBlog();
 const isRefreshing = ref(false);
+const readingProgress = ref(0);
+
+// Référence au post actuel (le premier élément de posts)
+const post = computed(() => posts.value && posts.value.length > 0 ? posts.value[0] : null);
+
+// Fonction pour calculer la progression de lecture
+const calculateReadingProgress = () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight;
+  const winHeight = window.innerHeight;
+  const scrollPercent = scrollTop / (docHeight - winHeight);
+  readingProgress.value = Math.min(scrollPercent * 100, 100);
+};
+
+// Formater la date
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  }).format(date);
+};
+
+// Obtenir le nom d'une catégorie
+const getCategoryName = (categoryId, post) => {
+  if (!post || !post.categories) return '';
+  const category = post.categories.find(cat => cat.id === categoryId || cat.slug === categoryId);
+  return category ? category.name : '';
+};
 
 onMounted(async () => {
   const slug = route.params.slug;
@@ -78,6 +118,14 @@ onMounted(async () => {
     console.log('Chargement de l\'article avec le slug:', slug);
     await fetchPostBySlug(slug);
   }
+  
+  // Ajouter l'écouteur d'événement pour suivre le défilement
+  window.addEventListener('scroll', calculateReadingProgress);
+});
+
+onUnmounted(() => {
+  // Nettoyer l'écouteur d'événement lors de la destruction du composant
+  window.removeEventListener('scroll', calculateReadingProgress);
 });
 
 const refreshData = async () => {
@@ -99,18 +147,35 @@ const goBack = () => {
   navigateTo('/');
 };
 
-const formatDate = (dateString) => {
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString('fr-FR', options);
-};
-
-// Améliorer le contenu en remplaçant les images standard par des nuxt-img
+// Améliorer l'affichage des caractères accentués dans le contenu HTML
 const enhancePostContent = (content) => {
   if (!content) return '';
   
-  // Pour le moment, nous retournons le contenu tel quel
-  // Dans une version plus avancée, on pourrait parser le HTML pour remplacer les balises img
-  return content;
+  // Décoder les entités HTML pour les caractères accentués
+  let enhancedContent = content
+    .replace(/&eacute;/g, 'é')
+    .replace(/&egrave;/g, 'è')
+    .replace(/&agrave;/g, 'à')
+    .replace(/&ccedil;/g, 'ç')
+    .replace(/&ecirc;/g, 'ê')
+    .replace(/&ocirc;/g, 'ô')
+    .replace(/&ucirc;/g, 'û')
+    .replace(/&icirc;/g, 'î')
+    .replace(/&euml;/g, 'ë')
+    .replace(/&iuml;/g, 'ï')
+    .replace(/&uuml;/g, 'ü')
+    .replace(/&acirc;/g, 'â')
+    .replace(/&ugrave;/g, 'ù')
+    .replace(/&Eacute;/g, 'É')
+    .replace(/&Egrave;/g, 'È')
+    .replace(/&Agrave;/g, 'À')
+    .replace(/&Ccedil;/g, 'Ç')
+    .replace(/&nbsp;/g, ' ');
+  
+  // Améliorer la présentation des paragraphes
+  enhancedContent = enhancedContent.replace(/<p>/g, '<p class="enhanced-paragraph">');
+  
+  return enhancedContent;
 };
 
 // Computed property qui essaie de trouver la meilleure image disponible
@@ -144,59 +209,249 @@ const featuredImage = computed(() => {
   console.log('Aucune image disponible pour cet article');
   return null;
 });
+
+// Métadonnées pour le SEO et Open Graph
+const meta = computed(() => {
+  if (!post.value) return null;
+  
+  const description = post.value.excerpt 
+    ? post.value.excerpt.replace(/<\/?[^>]+(>|$)/g, "").substring(0, 160) 
+    : 'Article du blog Dinor';
+  
+  return {
+    title: post.value.title ? post.value.title : 'Article - Blog de Dinor App',
+    meta: [
+      { name: 'description', content: description },
+      // Open Graph tags
+      { property: 'og:title', content: post.value.title },
+      { property: 'og:description', content: description },
+      { property: 'og:type', content: 'article' },
+      { property: 'og:url', content: `https://dinorapp.com/post/${post.value.slug}` },
+      { property: 'og:image', content: post.value.thumbnail || 'https://dinorapp.com/default-image.jpg' },
+      // Métadonnées supplémentaires d'article
+      { property: 'article:published_time', content: post.value.date },
+      ...(post.value.categories ? post.value.categories.map(cat => ({ property: 'article:tag', content: cat.name })) : [])
+    ]
+  }
+});
+
+// Appliquer les métadonnées dynamiquement
+useHead(() => meta.value);
 </script>
 
 <style scoped>
 .container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 30px 20px;
+  padding: 20px;
   font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .header-actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
+  justify-content: flex-end;
+  margin-bottom: 20px;
 }
 
-.back-button, .refresh-btn {
+.action-button {
+  background-color: transparent;
+  color: var(--primary);
+  border: 1px solid var(--border-color);
+  padding: 8px 15px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
+  gap: 5px;
+}
+
+.action-button:hover {
+  background-color: var(--primary);
+  color: var(--white);
+}
+
+.post-container {
+  background-color: var(--card-background);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.post-header {
+  margin-bottom: 30px;
+}
+
+.post-title {
+  font-size: 2.2rem;
+  color: var(--text-primary);
+  margin-bottom: 15px;
+  line-height: 1.3;
+  font-weight: 800;
+}
+
+.post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 20px;
   font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: var(--lion);
 }
 
-.back-button:hover, .refresh-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+.post-author,
+.post-date,
+.post-categories {
+  margin-right: 15px;
+  margin-bottom: 10px;
 }
 
-.back-button:active, .refresh-btn:active {
-  transform: translateY(0);
+.post-author span,
+.post-date span {
+  font-weight: bold;
+  color: var(--text-primary);
 }
 
-.back-icon, .refresh-icon {
+.post-category {
   display: inline-block;
-  margin-right: 8px;
+  background-color: var(--category-badge);
+  color: var(--white);
+  padding: 3px 10px;
+  border-radius: 15px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  font-size: 0.8rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.post-image-container {
+  width: 100%;
+  max-height: 500px;
+  overflow: hidden;
+  border-radius: 5px;
+  margin-bottom: 30px;
+}
+
+.post-image {
+  width: 100%;
+  max-height: 500px;
+  object-fit: cover;
+  border-radius: 5px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.post-no-image {
+  width: 100%;
+  height: 300px;
+  background: linear-gradient(135deg, var(--no-image-gradient-start), var(--no-image-gradient-end));
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.no-image-label {
+  color: var(--white);
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.post-content {
+  color: var(--text-primary);
+  line-height: 1.8;
   font-size: 1.1rem;
+  margin-bottom: 30px;
 }
 
-.refreshing .refresh-icon {
+.post-content p {
+  margin-bottom: 20px;
+}
+
+.post-content h2 {
+  font-size: 1.8rem;
+  color: var(--text-primary);
+  margin: 30px 0 15px;
+  font-weight: 700;
+}
+
+.post-content h3 {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin: 25px 0 15px;
+  font-weight: 700;
+}
+
+.post-content a {
+  color: var(--link-color);
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.post-content a:hover {
+  color: var(--button-read-more);
+}
+
+.post-content ul, 
+.post-content ol {
+  margin-left: 20px;
+  margin-bottom: 20px;
+}
+
+.post-content li {
+  margin-bottom: 10px;
+}
+
+.post-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 5px;
+  margin: 20px 0;
+}
+
+.post-content blockquote {
+  border-left: 4px solid var(--primary);
+  padding-left: 20px;
+  margin: 20px 0;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.post-content pre {
+  background-color: var(--bistre);
+  color: var(--white);
+  padding: 15px;
+  border-radius: 5px;
+  overflow-x: auto;
+  margin: 20px 0;
+}
+
+.post-content code {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid var(--primary);
+  width: 40px;
+  height: 40px;
   animation: spin 1s linear infinite;
-}
-
-.refresh-text {
-  white-space: nowrap;
+  margin-bottom: 20px;
 }
 
 @keyframes spin {
@@ -204,316 +459,88 @@ const featuredImage = computed(() => {
   100% { transform: rotate(360deg); }
 }
 
-.loading, .error {
+.loading-text {
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+}
+
+.error-container {
   text-align: center;
-  font-size: 18px;
-  margin: 80px 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  color: var(--imperial-red);
+  padding: 50px 0;
 }
 
-.error h2 {
-  color: #e53e3e;
+.error-message {
   margin-bottom: 20px;
+  font-size: 1.2rem;
 }
 
-.error p {
-  margin-bottom: 30px;
-  max-width: 500px;
-}
-
-.spinner {
-  border: 5px solid rgba(0, 0, 0, 0.1);
-  border-radius: 50%;
-  border-top: 5px solid #6366f1;
-  width: 50px;
-  height: 50px;
+.error-detail {
+  color: var(--falu-red);
   margin-bottom: 20px;
-  animation: spin 1s linear infinite;
-}
-
-.post-header {
-  margin-bottom: 30px;
-  animation: fade-in 0.8s ease-out;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.post-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-bottom: 15px;
-}
-
-.post-date {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #6366f1;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.post-categories {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.category {
-  font-size: 0.8rem;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
-  color: #6366f1;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-weight: 600;
-}
-
-.post-title {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: #2d3748;
-  line-height: 1.3;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 30px;
-}
-
-.post-title::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 0;
-  width: 100px;
-  height: 4px;
-  background: linear-gradient(to right, #6366f1, #a855f7);
-  border-radius: 4px;
-}
-
-.post-featured-image {
-  margin-bottom: 30px;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  animation: slide-up 0.8s ease-out;
-}
-
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.post-featured-image img {
-  width: 100%;
-  height: auto;
-  display: block;
-  transition: transform 0.8s ease;
-}
-
-.post-featured-image:hover img {
-  transform: scale(1.02);
-}
-
-.post-content {
-  font-size: 1.1rem;
-  line-height: 1.8;
-  color: #4a5568;
-  animation: fade-in 1s ease-out 0.3s both;
-}
-
-.post-content :deep(h2) {
-  margin-top: 40px;
-  margin-bottom: 20px;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #2d3748;
-}
-
-.post-content :deep(h3) {
-  margin-top: 30px;
-  margin-bottom: 15px;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #2d3748;
-}
-
-.post-content :deep(p) {
-  margin-bottom: 20px;
-}
-
-.post-content :deep(img) {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  margin: 20px 0;
-}
-
-.post-content :deep(a) {
-  color: #6366f1;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
-}
-
-.post-content :deep(a:hover) {
-  color: #a855f7;
-  text-decoration: underline;
-}
-
-.post-content :deep(blockquote) {
-  border-left: 4px solid #6366f1;
-  padding-left: 20px;
-  margin-left: 0;
-  margin-right: 0;
-  font-style: italic;
-  color: #4a5568;
-}
-
-.post-content :deep(pre) {
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  overflow-x: auto;
-  margin: 20px 0;
-}
-
-.post-content :deep(code) {
-  background: #f1f5f9;
-  padding: 3px 6px;
-  border-radius: 4px;
+  font-size: 0.9rem;
   font-family: monospace;
-  font-size: 0.9em;
+  white-space: pre-wrap;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 15px;
+  border-radius: 5px;
+  text-align: left;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
-.post-content :deep(ul), .post-content :deep(ol) {
-  margin-bottom: 20px;
-  padding-left: 40px;
+.refresh-button {
+  background-color: var(--primary);
+  color: var(--white);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.post-content :deep(li) {
-  margin-bottom: 10px;
+.refresh-button:hover {
+  background-color: var(--secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Pour les écrans mobiles */
 @media (max-width: 768px) {
-  .header-actions {
-    flex-direction: column;
-    gap: 15px;
-    align-items: flex-start;
-  }
-  
   .post-title {
     font-size: 1.8rem;
   }
-  
+
   .post-content {
     font-size: 1rem;
   }
+
+  .post-content h2 {
+    font-size: 1.5rem;
+  }
+
+  .post-content h3 {
+    font-size: 1.3rem;
+  }
 }
 
-/* Styles pour les boutons flottants */
-.floating-btn {
+/* Style pour la barre de progression de lecture */
+.reading-progress-container {
   position: fixed;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
-  color: white;
-  border: none;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  z-index: 10;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background-color: rgba(200, 200, 200, 0.2);
+  z-index: 1000;
 }
 
-.back-floating-btn {
-  bottom: 30px;
-  left: 30px;
-}
-
-.refresh-floating-btn {
-  bottom: 30px;
-  right: 30px;
-}
-
-.floating-btn:hover {
-  transform: translateY(-5px) scale(1.05);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-}
-
-.floating-btn .back-icon,
-.floating-btn .refresh-icon {
-  font-size: 24px;
-  margin: 0;
-}
-
-.refreshing .refresh-icon {
-  animation: spin 1s linear infinite;
-}
-
-.btn-tooltip {
-  position: absolute;
-  background: #333;
-  color: white;
-  padding: 5px 12px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: all 0.3s ease;
-}
-
-.back-floating-btn .btn-tooltip {
-  left: 70px;
-  transform: translateX(-10px);
-}
-
-.refresh-floating-btn .btn-tooltip {
-  right: 70px;
-  transform: translateX(10px);
-}
-
-.floating-btn:hover .btn-tooltip {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-/* Ajustements pour les écrans mobiles */
-@media (max-width: 768px) {
-  .floating-btn {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .back-floating-btn {
-    bottom: 20px;
-    left: 20px;
-  }
-  
-  .refresh-floating-btn {
-    bottom: 20px;
-    right: 20px;
-  }
+.reading-progress-bar {
+  height: 100%;
+  background: linear-gradient(to right, var(--primary), var(--secondary));
+  width: 0%;
+  transition: width 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 </style>
