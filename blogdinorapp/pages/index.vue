@@ -20,8 +20,20 @@
         <transition-group name="post-list" tag="div" class="posts-grid">
           <div v-for="(post, index) in posts" :key="post.id" class="post-card" @click="goToPost(post.slug)" :style="{ '--i': index }">
             <div class="post-image">
-              <img v-if="post.thumbnail" :src="post.thumbnail" :alt="post.title">
+              <nuxt-img 
+                v-if="post.thumbnail" 
+                :src="post.thumbnail" 
+                width="400"
+                height="250"
+                placeholder
+                format="webp"
+                loading="lazy"
+                :alt="post.title"
+              />
               <div v-else class="no-image">Pas d'image</div>
+              
+              <!-- Titre en position absolute sur l'image -->
+              <h2 class="post-title-overlay" v-html="post.title"></h2>
             </div>
             <div class="post-content">
               <div class="post-meta">
@@ -32,7 +44,6 @@
                   </span>
                 </div>
               </div>
-              <h2 v-html="post.title"></h2>
               <div class="post-excerpt" v-html="post.excerpt"></div>
               <div class="post-read-more">Lire la suite <span class="arrow">→</span></div>
             </div>
@@ -433,55 +444,41 @@ watch(() => route.query.category, (newCategory) => {
 }
 
 .post-image {
-  height: 220px;
-  overflow: hidden;
   position: relative;
+  width: 100%;
+  height: 250px;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.post-image img {
+.post-image img,
+.post-image .nuxt-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 1.2s ease;
+  transition: transform 0.5s ease;
+}
+
+.post-card:hover .post-image img,
+.post-card:hover .post-image .nuxt-img {
+  transform: scale(1.05);
 }
 
 .no-image {
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-  color: #6c757d;
-  font-weight: 500;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: white;
+  font-weight: 600;
 }
 
 .post-content {
-  padding: 25px;
-  position: relative;
-}
-
-.post-content h2 {
-  margin-top: 5px;
-  margin-bottom: 15px;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #2d3748;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.post-excerpt {
-  margin-bottom: 20px;
-  font-size: 0.95rem;
-  color: #4a5568;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  line-height: 1.6;
+  padding: 0 8px;
 }
 
 .post-meta {
@@ -524,6 +521,33 @@ watch(() => route.query.category, (newCategory) => {
 .post-read-more .arrow {
   display: inline-block;
   transition: transform 0.3s ease;
+}
+
+.post-title-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 15px;
+  margin: 0;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8));
+  backdrop-filter: blur(2px);
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease;
+  z-index: 1;
+  max-height: 60%;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.post-card:hover .post-title-overlay {
+  transform: translateY(-5px);
 }
 
 /* Pagination styles */

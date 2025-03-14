@@ -32,10 +32,19 @@
         </header>
 
         <div v-if="featuredImage" class="post-featured-image">
-          <img :src="featuredImage" :alt="post.title">
+          <nuxt-img 
+            :src="featuredImage" 
+            :alt="post.title" 
+            width="900"
+            height="500"
+            placeholder
+            format="webp"
+            loading="eager"
+            sizes="sm:100vw md:800px lg:900px"
+          />
         </div>
 
-        <div class="post-content" v-html="post.content"></div>
+        <div class="post-content" v-html="enhancePostContent(post.content)"></div>
       </article>
     </div>
     
@@ -93,6 +102,15 @@ const goBack = () => {
 const formatDate = (dateString) => {
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
   return new Date(dateString).toLocaleDateString('fr-FR', options);
+};
+
+// Améliorer le contenu en remplaçant les images standard par des nuxt-img
+const enhancePostContent = (content) => {
+  if (!content) return '';
+  
+  // Pour le moment, nous retournons le contenu tel quel
+  // Dans une version plus avancée, on pourrait parser le HTML pour remplacer les balises img
+  return content;
 };
 
 // Computed property qui essaie de trouver la meilleure image disponible
