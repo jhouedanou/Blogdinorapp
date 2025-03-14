@@ -1,3 +1,5 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/2ab12049-b2c2-478d-a761-b9ed7854e964/deploy-status)](https://app.netlify.com/sites/blogdinor/deploys)
+
 # Nuxt Minimal Starter
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.

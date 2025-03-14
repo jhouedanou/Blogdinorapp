@@ -1,45 +1,49 @@
 <template>
-  <div class="container">
-    <div class="header-actions">
-      <button class="back-button" @click="goBack">
-        <span class="back-icon">←</span> Retour
-      </button>
-      <button v-if="!loading" @click="refreshData" class="refresh-btn" :class="{'refreshing': isRefreshing}">
-        <span class="refresh-icon">↻</span>
-        <span class="refresh-text">{{ isRefreshing ? 'Rafraîchissement...' : 'Rafraîchir' }}</span>
-      </button>
-    </div>
-
-    <div v-if="loading" class="loading">
-      <div class="spinner"></div>
-      <p>Chargement de l'article...</p>
-    </div>
-
-    <div v-else-if="!post" class="error">
-      <h2>Article non trouvé</h2>
-      <p>L'article que vous recherchez n'existe pas ou a été supprimé.</p>
-      <button class="back-button" @click="goBack">Retourner à la liste des articles</button>
-    </div>
-
-    <article v-else class="post-article">
-      <header class="post-header">
-        <div class="post-meta">
-          <div class="post-date">{{ formatDate(post.date) }}</div>
-          <div v-if="post.categories && post.categories.length" class="post-categories">
-            <span v-for="category in post.categories" :key="category" class="category">
-              {{ getCategoryName(category, post) }}
-            </span>
-          </div>
-        </div>
-        <h1 class="post-title" v-html="post.title"></h1>
-      </header>
-
-      <div v-if="featuredImage" class="post-featured-image">
-        <img :src="featuredImage" :alt="post.title">
+  <div>
+    <Header />
+    
+    <div class="container">
+      <div class="header-actions">
+        <button class="back-button" @click="goBack">
+          <span class="back-icon">←</span> Retour
+        </button>
+        <button v-if="!loading" @click="refreshData" class="refresh-btn" :class="{'refreshing': isRefreshing}">
+          <span class="refresh-icon">↻</span>
+          <span class="refresh-text">{{ isRefreshing ? 'Rafraîchissement...' : 'Rafraîchir' }}</span>
+        </button>
       </div>
 
-      <div class="post-content" v-html="post.content"></div>
-    </article>
+      <div v-if="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Chargement de l'article...</p>
+      </div>
+
+      <div v-else-if="!post" class="error">
+        <h2>Article non trouvé</h2>
+        <p>L'article que vous recherchez n'existe pas ou a été supprimé.</p>
+        <button class="back-button" @click="goBack">Retourner à la liste des articles</button>
+      </div>
+
+      <article v-else class="post-article">
+        <header class="post-header">
+          <div class="post-meta">
+            <div class="post-date">{{ formatDate(post.date) }}</div>
+            <div v-if="post.categories && post.categories.length" class="post-categories">
+              <span v-for="category in post.categories" :key="category" class="category">
+                {{ getCategoryName(category, post) }}
+              </span>
+            </div>
+          </div>
+          <h1 class="post-title" v-html="post.title"></h1>
+        </header>
+
+        <div v-if="featuredImage" class="post-featured-image">
+          <img :src="featuredImage" :alt="post.title">
+        </div>
+
+        <div class="post-content" v-html="post.content"></div>
+      </article>
+    </div>
   </div>
 </template>
 
@@ -47,6 +51,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import useBlog from '../../composables/useBlog';
+import Header from '../../components/Header.vue';
 
 const route = useRoute();
 const { post, loading, fetchPostBySlug, getCategoryName, refreshCache } = useBlog();

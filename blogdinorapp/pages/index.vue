@@ -1,81 +1,109 @@
 <template>
-  <div class="container">
-    <div class="header">
-      <h1 class="title">Le Blog de Dinor</h1>
-      <button v-if="!loading" @click="refreshData" class="refresh-btn" :class="{'refreshing': isRefreshing}">
-        <span class="refresh-icon">↻</span>
-        <span class="refresh-text">{{ isRefreshing ? 'Rafraîchissement...' : 'Rafraîchir' }}</span>
-      </button>
-    </div>
+  <div>
+    <Header />
     
-    <div v-if="loading" class="loading">
-      <div class="spinner"></div>
-      <p>Chargement des articles...</p>
-    </div>
-    
-    <div v-else>
-      <transition-group name="post-list" tag="div" class="posts-grid">
-        <div v-for="(post, index) in paginatedPosts" :key="post.id" class="post-card" @click="goToPost(post.slug)" :style="{ '--i': index }">
-          <div class="post-image">
-            <img v-if="post.thumbnail" :src="post.thumbnail" :alt="post.title">
-            <div v-else class="no-image">Pas d'image</div>
-          </div>
-          <div class="post-content">
-            <div class="post-date">{{ formatDate(post.date) }}</div>
-            <h2 v-html="post.title"></h2>
-            <div class="post-excerpt" v-html="post.excerpt"></div>
-            <div class="post-read-more">Lire la suite <span class="arrow">→</span></div>
-          </div>
-        </div>
-      </transition-group>
-      
-      <!-- Pagination controls -->
-      <div v-if="totalPages > 1" class="pagination">
-        <button 
-          @click="prevPage" 
-          class="pagination-btn" 
-          :class="{ 'disabled': currentPage === 1 }" 
-          :disabled="currentPage === 1"
-        >
-          <span class="pagination-arrow">←</span> Précédent
+    <div class="container">
+      <div class="header-actions">
+        <button v-if="!loading" @click="refreshData" class="refresh-btn" :class="{'refreshing': isRefreshing}">
+          <span class="refresh-icon">↻</span>
+          <span class="refresh-text">{{ isRefreshing ? 'Rafraîchissement...' : 'Rafraîchir' }}</span>
         </button>
         
-        <div class="pagination-pages">
+        <div v-if="activeCategory" class="active-filter">
+          <span class="filter-label">Filtré par : </span>
+          <span class="filter-value">{{ formatCategoryName(activeCategory) }}</span>
+          <button @click="clearFilter" class="clear-filter-btn">×</button>
+        </div>
+      </div>
+      
+      <div v-if="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Chargement des articles...</p>
+      </div>
+      
+      <div v-else>
+        <transition-group name="post-list" tag="div" class="posts-grid">
+          <div v-for="(post, index) in posts" :key="post.id" class="post-card" @click="goToPost(post.slug)" :style="{ '--i': index }">
+            <div class="post-image">
+              <img v-if="post.thumbnail" :src="post.thumbnail" :alt="post.title">
+              <div v-else class="no-image">Pas d'image</div>
+            </div>
+            <div class="post-content">
+              <div class="post-meta">
+                <div class="post-date">{{ formatDate(post.date) }}</div>
+                <div v-if="post.categories && post.categories.length" class="post-categories">
+                  <span v-for="(category, idx) in post.categories" :key="idx" class="post-category">
+                    {{ category.name }}
+                  </span>
+                </div>
+              </div>
+              <h2 v-html="post.title"></h2>
+              <div class="post-excerpt" v-html="post.excerpt"></div>
+              <div class="post-read-more">Lire la suite <span class="arrow">→</span></div>
+            </div>
+          </div>
+        </transition-group>
+        
+        <div v-if="posts.length === 0" class="no-posts">
+          <h3>Aucun article trouvé</h3>
+          <p v-if="activeCategory">Aucun article n'a été trouvé dans la catégorie "{{ formatCategoryName(activeCategory) }}".</p>
+          <button @click="clearFilter" class="refresh-btn">Voir tous les articles</button>
+        </div>
+        
+        <!-- Pagination controls -->
+        <div v-if="totalPages > 1" class="pagination">
           <button 
-            v-for="page in paginationButtons" 
-            :key="page.value" 
-            @click="goToPage(page.value)" 
-            class="pagination-page" 
-            :class="{ 
-              'active': page.value === currentPage,
-              'ellipsis': page.type === 'ellipsis' 
-            }"
-            :disabled="page.type === 'ellipsis'"
+            @click="prevPage" 
+            class="pagination-btn" 
+            :class="{ 'disabled': currentPage === 1 }" 
+            :disabled="currentPage === 1"
           >
-            {{ page.label }}
+            <span class="pagination-arrow">←</span> Précédent
+          </button>
+          
+          <div class="pagination-pages">
+            <button 
+              v-for="page in paginationButtons" 
+              :key="page.value" 
+              @click="goToPage(page.value)" 
+              class="pagination-page" 
+              :class="{ 
+                'active': page.value === currentPage,
+                'ellipsis': page.type === 'ellipsis' 
+              }"
+              :disabled="page.type === 'ellipsis'"
+            >
+              {{ page.label }}
+            </button>
+          </div>
+          
+          <button 
+            @click="nextPage" 
+            class="pagination-btn" 
+            :class="{ 'disabled': currentPage === totalPages }" 
+            :disabled="currentPage === totalPages"
+          >
+            Suivant <span class="pagination-arrow">→</span>
           </button>
         </div>
         
-        <button 
-          @click="nextPage" 
-          class="pagination-btn" 
-          :class="{ 'disabled': currentPage === totalPages }" 
-          :disabled="currentPage === totalPages"
-        >
-          Suivant <span class="pagination-arrow">→</span>
-        </button>
-      </div>
-      
-      <div class="posts-info">
-        Affichage de {{ displayedRange.start }}-{{ displayedRange.end }} sur {{ totalArticles }} articles
+        <div v-if="posts.length > 0" class="posts-info">
+          Affichage de {{ displayedRange.start }}-{{ displayedRange.end }} sur {{ totalArticles }} articles
+          <span v-if="activeCategory"> dans la catégorie "{{ formatCategoryName(activeCategory) }}"</span>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, watch, onBeforeMount } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import useBlog from '../composables/useBlog';
+import Header from '../components/Header.vue';
+
+const route = useRoute();
+const router = useRouter();
 
 const { 
   posts, 
@@ -88,10 +116,22 @@ const {
   goToPage,
   nextPage,
   prevPage,
-  itemsPerPage
+  itemsPerPage,
+  // Catégories
+  activeCategory,
+  setActiveCategory,
+  clearCategoryFilter
 } = useBlog();
 
 const isRefreshing = ref(false);
+
+onBeforeMount(() => {
+  // Vérifier si une catégorie est présente dans l'URL
+  const { category } = route.query;
+  if (category) {
+    setActiveCategory(category);
+  }
+});
 
 onMounted(async () => {
   await fetchPosts();
@@ -120,10 +160,23 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('fr-FR', options);
 };
 
+const clearFilter = () => {
+  clearCategoryFilter();
+  router.replace('/');
+};
+
+const formatCategoryName = (slug) => {
+  if (!slug) return '';
+  
+  // Convertir le format "top-10" en "Top 10" par exemple
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 // Calculer le nombre total d'articles
 const totalArticles = computed(() => {
-  // Accéder au cache pour obtenir la longueur totale
-  // Le composable expose posts mais pas cache directement
   return totalPages.value * itemsPerPage.value;
 });
 
@@ -185,6 +238,15 @@ const paginatedPosts = computed(() => {
   const end = start + itemsPerPage.value;
   return posts.value.slice(start, end);
 });
+
+// Surveiller les changements d'URL pour mettre à jour la catégorie active
+watch(() => route.query.category, (newCategory) => {
+  if (newCategory) {
+    setActiveCategory(newCategory);
+  } else {
+    clearCategoryFilter();
+  }
+});
 </script>
 
 <style scoped>
@@ -195,37 +257,13 @@ const paginatedPosts = computed(() => {
   font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.header {
+.header-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
-}
-
-.title {
-  text-align: center;
-  font-size: 3rem;
-  font-weight: 800;
-  color: #2d3748;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  position: relative;
-  overflow: hidden;
-  padding-bottom: 15px;
-  margin-bottom: 0;
-  flex-grow: 1;
-}
-
-.title::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 4px;
-  background: linear-gradient(to right, #6366f1, #a855f7);
-  border-radius: 4px;
-  animation: gradient-shift 8s infinite;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
 .refresh-btn {
@@ -267,24 +305,43 @@ const paginatedPosts = computed(() => {
   white-space: nowrap;
 }
 
+.active-filter {
+  display: flex;
+  align-items: center;
+  background-color: rgba(99, 102, 241, 0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+
+.filter-label {
+  color: #6c757d;
+  margin-right: 5px;
+}
+
+.filter-value {
+  font-weight: 600;
+  color: #6366f1;
+}
+
+.clear-filter-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-left: 8px;
+  padding: 0 5px;
+  line-height: 1;
+}
+
+.clear-filter-btn:hover {
+  color: #c82333;
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-}
-
-@keyframes gradient-shift {
-  0% {
-    background-position: 0% 50%;
-    width: 100px;
-  }
-  50% {
-    background-position: 100% 50%;
-    width: 150px;
-  }
-  100% {
-    background-position: 0% 50%;
-    width: 100px;
-  }
 }
 
 .loading {
@@ -311,6 +368,25 @@ const paginatedPosts = computed(() => {
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 30px;
   margin-bottom: 40px;
+}
+
+.no-posts {
+  text-align: center;
+  padding: 40px 0;
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: 12px;
+  margin-bottom: 40px;
+}
+
+.no-posts h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #4a5568;
+}
+
+.no-posts p {
+  color: #718096;
+  margin-bottom: 20px;
 }
 
 .post-card {
@@ -407,13 +483,33 @@ const paginatedPosts = computed(() => {
   line-height: 1.6;
 }
 
+.post-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
 .post-date {
   font-size: 0.8rem;
   font-weight: 600;
   color: #6366f1;
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 8px;
+}
+
+.post-categories {
+  display: flex;
+  gap: 5px;
+}
+
+.post-category {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background-color: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+  font-weight: 600;
 }
 
 .post-read-more {
@@ -537,14 +633,9 @@ const paginatedPosts = computed(() => {
 
 /* Pour les écrans mobiles */
 @media (max-width: 768px) {
-  .header {
+  .header-actions {
     flex-direction: column;
-    gap: 20px;
-  }
-  
-  .title {
-    font-size: 2.2rem;
-    margin-bottom: 20px;
+    align-items: stretch;
   }
   
   .posts-grid {
@@ -563,6 +654,12 @@ const paginatedPosts = computed(() => {
   .pagination-pages {
     order: -1;
     margin-bottom: 10px;
+  }
+  
+  .post-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
 }
 </style>
