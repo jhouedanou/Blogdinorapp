@@ -20,7 +20,9 @@ export default defineNuxtConfig({
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
       ]
-    }
+    },
+    // Ajout de la configuration de base pour les ressources statiques
+    baseURL: '/'
   },
   image: {
     domains: ['bigfive.dev', 'secure.gravatar.com'],
@@ -48,13 +50,19 @@ export default defineNuxtConfig({
   },
   // Configuration spécifique pour le déploiement sur Vercel
   nitro: {
-    preset: 'vercel'
+    preset: 'vercel-static',
+    // Configuration pour la génération statique
+    static: true
   },
   // Optimisations pour la performance
   routeRules: {
     '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
     '/images/**': { headers: { 'cache-control': 'public, max-age=604800' } }
   },
-  // Assurer que le routage fonctionne correctement
-  ssr: true
+  // Utilisation du mode statique pour Vercel
+  ssr: true,
+  // Configuration pour la génération statique
+  generate: {
+    fallback: true
+  }
 })
