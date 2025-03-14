@@ -61,8 +61,8 @@ export default defineNuxtConfig({
   },
   // Utilisation du mode statique pour Vercel
   ssr: true,
-  // Configuration pour la génération statique
-  generate: {
-    fallback: true
+  // Configuration pour le routage côté client
+  experimental: {
+    payloadExtraction: false
   }
 })
