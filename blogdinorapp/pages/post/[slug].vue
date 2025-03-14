@@ -1,13 +1,15 @@
 <template>
-  <div>
-    <Header />
-    
-    <!-- Barre de progression de lecture -->
-    <div class="reading-progress-container">
-      <div class="reading-progress-bar" :style="{ width: readingProgress + '%' }"></div>
-    </div>
-    
-    <div class="container">
+  <div class="container">
+    <div class="blog-background"></div>
+    <div class="blog-overlay"></div>
+    <div class="content-wrapper">
+      <Header />
+      
+      <!-- Barre de progression de lecture -->
+      <div class="reading-progress-container">
+        <div class="reading-progress-bar" :style="{ width: readingProgress + '%' }"></div>
+      </div>
+      
       <div class="header-actions">
         <!-- Supprimé les boutons "Retour" et "Rafraîchir" -->
       </div>
@@ -25,10 +27,10 @@
 
       <article v-else class="post-article">
         <header class="post-header">
-          <div class="post-meta">
+          <div class="post-meta-info">
             <div class="post-date">{{ formatDate(post.date) }}</div>
             <div v-if="post.categories && post.categories.length" class="post-categories">
-              <span v-for="category in post.categories" :key="category" class="category">
+              <span v-for="category in post.categories" :key="category" class="category-badge">
                 {{ getCategoryName(category, post) }}
               </span>
             </div>
@@ -240,10 +242,44 @@ useHead(() => meta.value);
 
 <style scoped>
 .container {
-  max-width: 900px;
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+.blog-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/images/bg1.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -2;
+}
+
+.blog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: -1;
+}
+
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .header-actions {
@@ -272,57 +308,109 @@ useHead(() => meta.value);
   color: var(--white);
 }
 
-.post-container {
-  background-color: var(--card-background);
+.post-article {
+  background-color: rgba(255, 255, 255, 0.9);
   border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  margin-top: 20px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
 }
 
 .post-header {
   margin-bottom: 30px;
+  text-align: center;
 }
 
 .post-title {
   font-size: 2.2rem;
-  color: var(--text-primary);
+  font-weight: 700;
   margin-bottom: 15px;
+  color: var(--primary-color);
   line-height: 1.3;
-  font-weight: 800;
 }
 
-.post-meta {
+.post-meta-info {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
   margin-bottom: 20px;
   font-size: 0.9rem;
-  color: var(--lion);
+  color: var(--text-secondary);
 }
 
-.post-author,
-.post-date,
-.post-categories {
-  margin-right: 15px;
-  margin-bottom: 10px;
+.post-author, .post-date, .post-categories {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
-.post-author span,
-.post-date span {
-  font-weight: bold;
+.post-author-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.category-badge {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.category-badge:hover {
+  background-color: var(--primary-dark);
+}
+
+.post-content {
+  font-size: 1.1rem;
+  line-height: 1.8;
   color: var(--text-primary);
 }
 
-.post-category {
-  display: inline-block;
-  background-color: var(--category-badge);
-  color: var(--white);
-  padding: 3px 10px;
-  border-radius: 15px;
-  margin-right: 5px;
-  margin-bottom: 5px;
-  font-size: 0.8rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.post-content p {
+  margin-bottom: 1.5rem;
+}
+
+.post-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 5px;
+  margin: 20px 0;
+}
+
+.post-content h2, .post-content h3, .post-content h4 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+
+.post-content a {
+  color: var(--primary-color);
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.post-content a:hover {
+  color: var(--primary-dark);
+}
+
+.post-content ul, .post-content ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.post-content blockquote {
+  border-left: 4px solid var(--primary-color);
+  padding-left: 1rem;
+  margin-left: 0;
+  color: var(--text-secondary);
+  font-style: italic;
 }
 
 .post-image-container {
@@ -363,82 +451,6 @@ useHead(() => meta.value);
   color: var(--white);
   font-size: 1.2rem;
   font-weight: 500;
-}
-
-.post-content {
-  color: var(--text-primary);
-  line-height: 1.8;
-  font-size: 1.1rem;
-  margin-bottom: 30px;
-}
-
-.post-content p {
-  margin-bottom: 20px;
-}
-
-.post-content h2 {
-  font-size: 1.8rem;
-  color: var(--text-primary);
-  margin: 30px 0 15px;
-  font-weight: 700;
-}
-
-.post-content h3 {
-  font-size: 1.5rem;
-  color: var(--text-primary);
-  margin: 25px 0 15px;
-  font-weight: 700;
-}
-
-.post-content a {
-  color: var(--link-color);
-  text-decoration: underline;
-  transition: color 0.3s ease;
-}
-
-.post-content a:hover {
-  color: var(--button-read-more);
-}
-
-.post-content ul, 
-.post-content ol {
-  margin-left: 20px;
-  margin-bottom: 20px;
-}
-
-.post-content li {
-  margin-bottom: 10px;
-}
-
-.post-content img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 5px;
-  margin: 20px 0;
-}
-
-.post-content blockquote {
-  border-left: 4px solid var(--primary);
-  padding-left: 20px;
-  margin: 20px 0;
-  font-style: italic;
-  color: var(--text-secondary);
-}
-
-.post-content pre {
-  background-color: var(--bistre);
-  color: var(--white);
-  padding: 15px;
-  border-radius: 5px;
-  overflow-x: auto;
-  margin: 20px 0;
-}
-
-.post-content code {
-  font-family: 'Courier New', monospace;
-  background-color: rgba(0, 0, 0, 0.05);
-  padding: 2px 5px;
-  border-radius: 3px;
 }
 
 .loading-container {

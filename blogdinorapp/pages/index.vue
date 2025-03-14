@@ -1,112 +1,116 @@
 <template>
-  <div>
-    <Header />
-    
-    <div class="container">
-      <div class="header-actions">
-        <div v-if="activeCategory" class="active-filter">
-          <span class="filter-label">Filtré par : </span>
-          <span class="filter-value">{{ formatCategoryName(activeCategory) }}</span>
-          <button @click="clearFilter" class="clear-filter-btn">×</button>
+  <div class="container">
+    <div class="blog-background"></div>
+    <div class="blog-overlay"></div>
+    <div class="content-wrapper">
+      <div>
+        <Header />
+        
+        <div class="header-actions">
+          <div v-if="activeCategory" class="active-filter">
+            <span class="filter-label">Filtré par : </span>
+            <span class="filter-value">{{ formatCategoryName(activeCategory) }}</span>
+            <button @click="clearFilter" class="clear-filter-btn">×</button>
+          </div>
         </div>
-      </div>
-      
-      <div v-if="loading" class="loading">
-        <div class="spinner"></div>
-        <p>Chargement des articles...</p>
-      </div>
-      
-      <div v-else>
-        <transition-group name="post-list" tag="div" class="posts-grid">
-          <div v-for="(post, index) in posts" :key="post.id" class="post-card" @click="goToPost(post.slug)" :style="{ '--i': index }">
-            <div class="post-image-container">
-              <nuxt-img 
-                v-if="post.thumbnail" 
-                :src="post.thumbnail" 
-                width="340"
-                height="180"
-                quality="90"
-                format="webp"
-                :alt="post.title"
-                class="post-thumbnail-image"
-              />
-              <div v-else class="no-image">Pas d'image</div>
-              <h3 class="post-title-overlay" v-html="formatTitle(post.title)"></h3>
-            </div>
-            <div class="post-meta">
-              <span class="post-date">{{ formatDate(post.date) }}</span>
-              <div v-if="post.categories && post.categories.length" class="post-categories">
-                <span v-for="category in post.categories" :key="category.id" class="category-badge">
-                  {{ category.name }}
-                </span>
+        
+        <div v-if="loading" class="loading">
+          <div class="spinner"></div>
+          <p>Chargement des articles...</p>
+        </div>
+        
+        <div v-else>
+          <transition-group name="post-list" tag="div" class="posts-grid">
+            <div v-for="(post, index) in posts" :key="post.id" class="post-card" @click="goToPost(post.slug)" :style="{ '--i': index }">
+              <div class="post-image-container">
+                <nuxt-img 
+                  v-if="post.thumbnail" 
+                  :src="post.thumbnail" 
+                  width="340"
+                  height="180"
+                  quality="90"
+                  format="webp"
+                  :alt="post.title"
+                  class="post-thumbnail-image"
+                />
+                <div v-else class="no-image">Pas d'image</div>
+                <h3 class="post-title-overlay" v-html="formatTitle(post.title)"></h3>
+              </div>
+              <div class="post-meta">
+                <span class="post-date">{{ formatDate(post.date) }}</span>
+                <div v-if="post.categories && post.categories.length" class="post-categories">
+                  <span v-for="category in post.categories" :key="category.id" class="category-badge">
+                    {{ category.name }}
+                  </span>
+                </div>
+              </div>
+              <div class="post-excerpt" v-html="formatExcerpt(post.excerpt)"></div>
+              <div class="post-footer">
+                <nuxt-link :to="`/post/${post.slug}`" class="read-more-btn">Lire plus</nuxt-link>
               </div>
             </div>
-            <div class="post-excerpt" v-html="formatExcerpt(post.excerpt)"></div>
-            <div class="post-footer">
-              <nuxt-link :to="`/post/${post.slug}`" class="read-more-btn">Lire plus</nuxt-link>
-            </div>
-          </div>
-        </transition-group>
-        
-        <div v-if="posts.length === 0" class="no-posts">
-          <h3>Aucun article trouvé</h3>
-          <p v-if="activeCategory">Aucun article n'a été trouvé dans la catégorie "{{ formatCategoryName(activeCategory) }}".</p>
-          <button @click="clearFilter" class="refresh-btn">Voir tous les articles</button>
-        </div>
-        
-        <!-- Pagination controls -->
-        <div v-if="totalPages > 1" class="pagination">
-          <button 
-            @click="prevPage" 
-            class="pagination-btn" 
-            :class="{ 'disabled': currentPage === 1 }" 
-            :disabled="currentPage === 1"
-          >
-            <span class="pagination-arrow">←</span> Précédent
-          </button>
+          </transition-group>
           
-          <div class="pagination-pages">
+          <div v-if="posts.length === 0" class="no-posts">
+            <h3>Aucun article trouvé</h3>
+            <p v-if="activeCategory">Aucun article n'a été trouvé dans la catégorie "{{ formatCategoryName(activeCategory) }}".</p>
+            <button @click="clearFilter" class="refresh-btn">Voir tous les articles</button>
+          </div>
+          
+          <!-- Pagination controls -->
+          <div v-if="totalPages > 1" class="pagination">
             <button 
-              v-for="page in paginationButtons" 
-              :key="page.value" 
-              @click="goToPage(page.value)" 
-              class="pagination-page" 
-              :class="{ 
-                'active': page.value === currentPage,
-                'ellipsis': page.type === 'ellipsis' 
-              }"
-              :disabled="page.type === 'ellipsis'"
+              @click="prevPage" 
+              class="pagination-btn" 
+              :class="{ 'disabled': currentPage === 1 }" 
+              :disabled="currentPage === 1"
             >
-              {{ page.label }}
+              <span class="pagination-arrow">←</span> Précédent
+            </button>
+            
+            <div class="pagination-pages">
+              <button 
+                v-for="page in paginationButtons" 
+                :key="page.value" 
+                @click="goToPage(page.value)" 
+                class="pagination-page" 
+                :class="{ 
+                  'active': page.value === currentPage,
+                  'ellipsis': page.type === 'ellipsis' 
+                }"
+                :disabled="page.type === 'ellipsis'"
+              >
+                {{ page.label }}
+              </button>
+            </div>
+            
+            <button 
+              @click="nextPage" 
+              class="pagination-btn" 
+              :class="{ 'disabled': currentPage === totalPages }" 
+              :disabled="currentPage === totalPages"
+            >
+              Suivant <span class="pagination-arrow">→</span>
             </button>
           </div>
           
-          <button 
-            @click="nextPage" 
-            class="pagination-btn" 
-            :class="{ 'disabled': currentPage === totalPages }" 
-            :disabled="currentPage === totalPages"
-          >
-            Suivant <span class="pagination-arrow">→</span>
-          </button>
-        </div>
-        
-        <div v-if="posts.length > 0" class="posts-info">
-          Affichage de {{ displayedRange.start }}-{{ displayedRange.end }} sur {{ totalArticles }} articles
-          <span v-if="activeCategory"> dans la catégorie "{{ formatCategoryName(activeCategory) }}"</span>
+          <div v-if="posts.length > 0" class="posts-info">
+            Affichage de {{ displayedRange.start }}-{{ displayedRange.end }} sur {{ totalArticles }} articles
+            <span v-if="activeCategory"> dans la catégorie "{{ formatCategoryName(activeCategory) }}"</span>
+          </div>
         </div>
       </div>
+      
+      <!-- Bouton flottant pour rafraîchir -->
+      <button v-if="!loading" @click="refreshData" class="floating-btn refresh-floating-btn" :class="{'refreshing': isRefreshing}" aria-label="Rafraîchir les articles">
+        <span class="refresh-icon">↻</span>
+        <span class="btn-tooltip">{{ isRefreshing ? 'Rafraîchissement...' : 'Rafraîchir' }}</span>
+      </button>
+      <button v-if="!loading" @click="goBack" class="floating-btn back-floating-btn" aria-label="Retour">
+        <span class="back-icon">⇐</span>
+        <span class="btn-tooltip">Retour</span>
+      </button>
     </div>
-    
-    <!-- Bouton flottant pour rafraîchir -->
-    <button v-if="!loading" @click="refreshData" class="floating-btn refresh-floating-btn" :class="{'refreshing': isRefreshing}" aria-label="Rafraîchir les articles">
-      <span class="refresh-icon">↻</span>
-      <span class="btn-tooltip">{{ isRefreshing ? 'Rafraîchissement...' : 'Rafraîchir' }}</span>
-    </button>
-    <button v-if="!loading" @click="goBack" class="floating-btn back-floating-btn" aria-label="Retour">
-      <span class="back-icon">⇐</span>
-      <span class="btn-tooltip">Retour</span>
-    </button>
   </div>
 </template>
 
@@ -357,10 +361,44 @@ const goBack = () => {
 <style scoped>
 /* Styles généraux */
 .container {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+.blog-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/images/bg1.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -2;
+}
+
+.blog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: -1;
+}
+
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .header-actions {
@@ -471,8 +509,9 @@ const goBack = () => {
 
 .posts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+  margin-top: 30px;
   margin-bottom: 40px;
 }
 
@@ -496,28 +535,25 @@ const goBack = () => {
 }
 
 .post-card {
-  background-color: var(--card-background);
-  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
-  position: relative;
+  transform: translateY(var(--animation-offset, 0));
+  animation: fadeIn 0.5s ease forwards;
+  animation-delay: calc(var(--i, 0) * 0.1s);
+  opacity: 0;
 }
 
 .post-card:hover {
-  transform: translateY(-12px) scale(1.02);
-  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.15);
-}
-
-.post-card:hover .post-read-more .arrow {
-  transform: translateX(8px);
-}
-
-.post-card:hover .post-image img {
-  transform: scale(1.1);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
 .post-card:before {
@@ -527,11 +563,10 @@ const goBack = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.7), rgba(168, 85, 247, 0.7));
+  background: var(--primary-color);
   opacity: 0;
-  transition: opacity 0.4s ease;
-  z-index: 1;
-  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 0;
 }
 
 .post-card:hover:before {
@@ -576,75 +611,71 @@ const goBack = () => {
 }
 
 .post-meta {
+  padding: 15px 15px 5px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .post-date {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #6366f1;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
 }
 
 .post-categories {
   display: flex;
+  flex-wrap: wrap;
   gap: 5px;
 }
 
-.post-category {
-  font-size: 0.7rem;
-  padding: 3px 8px;
-  border-radius: 20px;
-  background-color: var(--category-badge);
-  color: var(--white);
-  font-weight: 600;
-  opacity: 0.8;
-}
-
-.post-read-more {
-  display: inline-block;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #6366f1;
-  position: relative;
-}
-
-.post-read-more .arrow {
-  display: inline-block;
-  transition: transform 0.3s ease;
-}
-
-.post-title-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 15px;
-  margin: 0;
+.category-badge {
+  background-color: var(--primary-color);
   color: white;
-  font-size: 1.1rem;
-  font-weight: 700;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8));
-  backdrop-filter: blur(2px);
-  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  transition: transform 0.3s ease;
-  z-index: 1;
-  max-height: 60%;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
-  text-align: left;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
 }
 
-.post-card:hover .post-title-overlay {
-  transform: translateY(-5px);
+.category-badge:hover {
+  background-color: var(--primary-dark);
+}
+
+.post-excerpt {
+  padding: 15px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  flex-grow: 1;
+}
+
+.post-footer {
+  padding: 0 15px 15px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.read-more-btn {
+  display: inline-block;
+  padding: 8px 15px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.read-more-btn:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
 }
 
 /* Pagination styles */
@@ -785,7 +816,7 @@ const goBack = () => {
   }
 }
 
-/* Styles pour le bouton flottant */
+/* Style pour le bouton flottant */
 .floating-btn {
   position: fixed;
   bottom: 30px;
@@ -919,7 +950,7 @@ const goBack = () => {
   background-color: var(--primary);
   color: white;
   padding: 3px 8px;
-  border-radius: 12px;
+  border-radius: 20px;
   font-size: 0.75rem;
   margin-right: 5px;
   margin-bottom: 5px;
