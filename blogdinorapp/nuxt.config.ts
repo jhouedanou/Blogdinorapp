@@ -48,13 +48,7 @@ export default defineNuxtConfig({
   },
   // Configuration spécifique pour le déploiement sur Vercel
   nitro: {
-    preset: 'vercel',
-    prerender: {
-      crawlLinks: true,
-      routes: [
-        '/'
-      ]
-    }
+    preset: 'vercel'
   },
   // Optimisations pour la performance
   routeRules: {
