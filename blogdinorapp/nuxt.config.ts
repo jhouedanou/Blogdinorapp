@@ -43,5 +43,17 @@ export default defineNuxtConfig({
         apiBase: process.env.API_BASE || 'https://bigfive.dev/blogdinor'
       }
     }
-  }
+  },
+  // Configuration spécifique pour le déploiement sur Netlify
+  nitro: {
+    preset: 'netlify',
+    prerender: {
+      crawlLinks: true,
+      routes: [
+        '/',
+      ]
+    }
+  },
+  // Assurer que le routage fonctionne correctement
+  ssr: true
 })

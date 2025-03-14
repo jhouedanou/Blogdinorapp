@@ -2,7 +2,7 @@
 
 [build]
   # Commande à exécuter pour construire l'application
-  command = "npm run build"
+  command = "npm run netlify-build"
   
   # Répertoire contenant les fichiers statiques générés après la construction
   publish = ".output/public"
@@ -38,3 +38,10 @@
   for = "/images/*"
   [headers.values]
     Cache-Control = "public, max-age=604800"
+
+# Force le HTTPS
+[[redirects]]
+  from = "http://*"
+  to = "https://:splat"
+  status = 301
+  force = true
