@@ -244,10 +244,13 @@ useHead(() => meta.value);
 .container {
   position: relative;
   min-height: 100vh;
-  width: 100%;
+  width: 100vw;
   padding: 0;
-  margin: 0;
+  margin: 0 auto;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .blog-background {
@@ -269,7 +272,7 @@ useHead(() => meta.value);
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(255, 255, 255, 0.7);
   z-index: -1;
 }
 
@@ -280,6 +283,9 @@ useHead(() => meta.value);
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .header-actions {
@@ -314,11 +320,18 @@ useHead(() => meta.value);
   padding: 30px;
   margin-top: 20px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .post-header {
   margin-bottom: 30px;
   text-align: center;
+  width: 100%;
 }
 
 .post-title {
@@ -371,6 +384,7 @@ useHead(() => meta.value);
   font-size: 1.1rem;
   line-height: 1.8;
   color: var(--text-primary);
+  width: 100%;
 }
 
 .post-content p {

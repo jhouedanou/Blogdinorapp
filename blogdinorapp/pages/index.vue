@@ -363,10 +363,13 @@ const goBack = () => {
 .container {
   position: relative;
   min-height: 100vh;
-  width: 100%;
+  width: 100vw;
   padding: 0;
-  margin: 0;
+  margin: 0 auto;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .blog-background {
@@ -388,7 +391,7 @@ const goBack = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(255, 255, 255, 0.7);
   z-index: -1;
 }
 
@@ -399,6 +402,9 @@ const goBack = () => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .header-actions {
@@ -509,10 +515,23 @@ const goBack = () => {
 
 .posts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(1, 1fr);
   gap: 25px;
   margin-top: 30px;
   margin-bottom: 40px;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .posts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .posts-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .no-posts {
@@ -791,10 +810,6 @@ const goBack = () => {
     align-items: stretch;
   }
   
-  .posts-grid {
-    grid-template-columns: 1fr;
-  }
-  
   .post-card {
     margin-bottom: 20px;
   }
@@ -999,5 +1014,30 @@ const goBack = () => {
   background-color: var(--button-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.post-title-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  color: white;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: transform 0.3s ease;
+  z-index: 2;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.post-card:hover .post-title-overlay {
+  transform: translateY(-5px);
+}
+
+.content-wrapper{
+  margin: 0 auto;
+  width: 100%;
 }
 </style>

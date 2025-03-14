@@ -71,12 +71,23 @@ const resetCategoryFilter = () => {
   top: 0;
   z-index: 100;
   padding: 16px 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
 }
 
 .logo-wrapper {
