@@ -54,6 +54,25 @@
         </div>
 
         <div class="post-content" v-html="enhancePostContent(post.content)"></div>
+        
+        <!-- Boutons de partage -->
+        <div class="share-container">
+          <h3 class="share-title">Partager cet article</h3>
+          <div class="share-buttons">
+            <button @click="shareOnFacebook" class="share-button facebook" aria-label="Partager sur Facebook">
+              <span class="share-icon">f</span>
+            </button>
+            <button @click="shareOnTwitter" class="share-button twitter" aria-label="Partager sur Twitter">
+              <span class="share-icon">t</span>
+            </button>
+            <button @click="shareOnLinkedIn" class="share-button linkedin" aria-label="Partager sur LinkedIn">
+              <span class="share-icon">in</span>
+            </button>
+            <button @click="shareOnWhatsApp" class="share-button whatsapp" aria-label="Partager sur WhatsApp">
+              <span class="share-icon">w</span>
+            </button>
+          </div>
+        </div>
       </article>
     </div>
     
@@ -212,32 +231,60 @@ const featuredImage = computed(() => {
 });
 
 // Métadonnées pour le SEO et Open Graph
-const meta = computed(() => {
-  if (!post.value) return null;
+useHead(() => {
+  if (!post.value) return {}
   
-  const description = post.value.excerpt 
-    ? post.value.excerpt.replace(/<\/?[^>]+(>|$)/g, "").substring(0, 160) 
-    : 'Article du blog Dinor';
+  const ogImage = featuredImage.value || 'https://blogdinor.vercel.app/images/bg1.jpg'
+  const postUrl = `https://blogdinor.vercel.app/post/${post.value.slug}`
   
   return {
-    title: post.value.title ? post.value.title : 'Article - Blog de Dinor App',
+    title: post.value.title,
     meta: [
-      { name: 'description', content: description },
-      // Open Graph tags
+      { name: 'description', content: post.value.excerpt },
+      // Open Graph
       { property: 'og:title', content: post.value.title },
-      { property: 'og:description', content: description },
+      { property: 'og:description', content: post.value.excerpt },
       { property: 'og:type', content: 'article' },
-      { property: 'og:url', content: `https://dinorapp.com/post/${post.value.slug}` },
-      { property: 'og:image', content: post.value.thumbnail || 'https://dinorapp.com/default-image.jpg' },
-      // Métadonnées supplémentaires d'article
-      { property: 'article:published_time', content: post.value.date },
-      ...(post.value.categories ? post.value.categories.map(cat => ({ property: 'article:tag', content: cat.name })) : [])
+      { property: 'og:url', content: postUrl },
+      { property: 'og:image', content: ogImage },
+      { property: 'og:image:width', content: '1200' },
+      { property: 'og:image:height', content: '630' },
+      // Twitter Card
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: post.value.title },
+      { name: 'twitter:description', content: post.value.excerpt },
+      { name: 'twitter:image', content: ogImage },
     ]
   }
-});
+})
 
-// Appliquer les métadonnées dynamiquement
-useHead(() => meta.value);
+// Fonction pour partager sur les réseaux sociaux
+const shareUrl = computed(() => {
+  if (!post.value) return ''
+  return `https://blogdinor.vercel.app/post/${post.value.slug}`
+})
+
+const shareTitle = computed(() => post.value?.title || 'Blog Dinor')
+
+const shareOnFacebook = () => {
+  const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl.value)}`
+  window.open(url, '_blank')
+}
+
+const shareOnTwitter = () => {
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle.value)}&url=${encodeURIComponent(shareUrl.value)}`
+  window.open(url, '_blank')
+}
+
+const shareOnLinkedIn = () => {
+  const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl.value)}`
+  window.open(url, '_blank')
+}
+
+const shareOnWhatsApp = () => {
+  const url = `https://wa.me/?text=${encodeURIComponent(shareTitle.value + ' ' + shareUrl.value)}`
+  window.open(url, '_blank')
+}
 </script>
 
 <style scoped>
@@ -573,5 +620,67 @@ useHead(() => meta.value);
   width: 0%;
   transition: width 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Styles pour les boutons de partage */
+.share-container {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.share-title {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  color: var(--text-primary);
+}
+
+.share-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.share-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  color: white;
+  font-weight: bold;
+}
+
+.share-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.facebook {
+  background-color: #3b5998;
+}
+
+.twitter {
+  background-color: #1da1f2;
+}
+
+.linkedin {
+  background-color: #0077b5;
+}
+
+.whatsapp {
+  background-color: #25d366;
+}
+
+.share-icon {
+  font-size: 1.2rem;
 }
 </style>
