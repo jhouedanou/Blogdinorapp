@@ -44,8 +44,7 @@
             height="500"
             placeholder
             format="webp"
-            loading="eager"
-            sizes="sm:100vw md:800px lg:900px"
+            class="post-featured-image"
           />
         </div>
         <div v-else class="post-no-image">
@@ -332,14 +331,20 @@ useHead(() => meta.value);
   overflow: hidden;
   border-radius: 5px;
   margin-bottom: 30px;
+  position: relative;
+  aspect-ratio: 16 / 9;
 }
 
-.post-image {
+.post-featured-image {
   width: 100%;
-  max-height: 500px;
+  height: 100%;
   object-fit: cover;
-  border-radius: 5px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  object-position: center;
+  transition: transform 0.3s ease;
+}
+
+.post-image-container:hover .post-featured-image {
+  transform: scale(1.05);
 }
 
 .post-no-image {

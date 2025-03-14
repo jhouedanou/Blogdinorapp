@@ -28,6 +28,7 @@
                 quality="90"
                 format="webp"
                 :alt="post.title"
+                class="post-thumbnail-image"
               />
               <div v-else class="no-image">Pas d'image</div>
               <h3 class="post-title-overlay" v-html="formatTitle(post.title)"></h3>
@@ -541,16 +542,19 @@ const goBack = () => {
   position: relative;
   overflow: hidden;
   aspect-ratio: 16 / 9;
+  border-radius: 8px 8px 0 0;
+  width: 100%;
 }
 
-.post-image {
+.post-thumbnail-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  object-position: center;
+  transition: transform 0.3s ease-in-out;
 }
 
-.post-card:hover .post-image {
+.post-card:hover .post-thumbnail-image {
   transform: scale(1.05);
 }
 
