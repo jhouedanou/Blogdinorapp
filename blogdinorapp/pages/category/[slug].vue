@@ -28,15 +28,12 @@
           <div class="posts-grid">
             <div v-for="(post, index) in filteredPosts" :key="post.id" class="post-card" @click="goToPost(post.slug)">
               <div class="post-image-container">
-                <nuxt-img 
+                <img 
                   v-if="post.thumbnail" 
                   :src="post.thumbnail" 
-                  width="340"
-                  height="180"
-                  quality="90"
-                  format="webp"
                   :alt="post.title"
                   class="post-thumbnail-image"
+                  loading="lazy"
                 />
                 <div v-else class="no-image">Pas d'image</div>
                 <h3 class="post-title-overlay" v-html="formatTitle(post.title)"></h3>

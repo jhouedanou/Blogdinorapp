@@ -39,14 +39,11 @@
         </header>
 
         <div v-if="featuredImage" class="post-image-container">
-          <nuxt-img 
+          <img 
             :src="featuredImage" 
             :alt="post.title" 
-            width="900"
-            height="500"
-            placeholder
-            format="webp"
             class="post-featured-image"
+            loading="lazy"
           />
         </div>
         <div v-else class="post-no-image">

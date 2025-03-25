@@ -39,6 +39,10 @@ export default defineNuxtConfig({
     },
     format: ['webp', 'jpg', 'png'],
     quality: 80,
+    provider: 'vercel',
+    vercel: {
+      // Pas besoin de paramètres supplémentaires, car Vercel gère tout
+    },
     screens: {
       xs: 320,
       sm: 640,
