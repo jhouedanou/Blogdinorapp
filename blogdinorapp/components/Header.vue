@@ -4,8 +4,8 @@
       <div class="header-content">
         <div class="logo-wrapper">
           <NuxtLink to="/" class="logo-link">
-          <NuxtImg
-            :src="'/images/logo.jpg'"
+          <img
+            src="/images/logo.jpg"
             :alt="siteName"
             width="40"
             height="40"

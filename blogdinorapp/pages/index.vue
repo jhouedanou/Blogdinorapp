@@ -554,20 +554,19 @@ const goBack = () => {
 }
 
 .post-card {
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: var(--card-background);
   border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
-  transform: translateY(var(--animation-offset, 0));
+  opacity: 0;
   animation: fadeIn 0.5s ease forwards;
   animation-delay: calc(var(--i, 0) * 0.1s);
-  opacity: 0;
 }
 
 .post-card:hover {

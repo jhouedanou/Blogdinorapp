@@ -1,11 +1,13 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: process.env.NODE_ENV !== 'production' },
+
   modules: [
     '@nuxt/image',
   ],
 
   ssr: true,
+
   nitro: {
     preset: 'vercel'
   },
@@ -24,6 +26,7 @@ export default defineNuxtConfig({
     },
     baseURL: '/'
   },
+
   image: {
     domains: ['bigfive.dev', 'secure.gravatar.com'],
     alias: {
@@ -40,6 +43,7 @@ export default defineNuxtConfig({
       xxl: 1536
     }
   },
+
   runtimeConfig: {
     public: {
       apiBase: process.env.API_BASE || 'https://bigfive.dev/blogdinor',
@@ -47,5 +51,7 @@ export default defineNuxtConfig({
         apiBase: process.env.API_BASE || 'https://bigfive.dev/blogdinor'
       }
     }
-  }
+  },
+
+  compatibilityDate: '2025-03-25'
 })
