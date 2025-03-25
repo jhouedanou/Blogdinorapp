@@ -6,6 +6,11 @@ export default defineNuxtConfig({
     '@nuxt/image',
   ],
 
+  css: [
+    '@/assets/css/colors.css',
+    '@/assets/css/global.css',
+  ],
+
   ssr: true,
 
   nitro: {

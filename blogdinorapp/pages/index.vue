@@ -20,8 +20,8 @@
         </div>
         
         <div v-else>
-          <transition-group name="post-list" tag="div" class="posts-grid">
-            <div v-for="(post, index) in posts" :key="post.id" class="post-card" @click="goToPost(post.slug)" :style="{ '--i': index }">
+          <div class="posts-grid">
+            <div v-for="(post, index) in posts" :key="post.id" class="post-card" @click="goToPost(post.slug)">
               <div class="post-image-container">
                 <nuxt-img 
                   v-if="post.thumbnail" 
@@ -49,7 +49,7 @@
                 <nuxt-link :to="`/post/${post.slug}`" class="read-more-btn">Lire plus</nuxt-link>
               </div>
             </div>
-          </transition-group>
+          </div>
           
           <div v-if="posts.length === 0" class="no-posts">
             <h3>Aucun article trouvé</h3>
@@ -554,48 +554,24 @@ const goBack = () => {
 }
 
 .post-card {
-  background-color: var(--card-background);
-  border-radius: 8px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  background-color: var(--white);
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   cursor: pointer;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  opacity: 0;
-  animation: fadeIn 0.5s ease forwards;
-  animation-delay: calc(var(--i, 0) * 0.1s);
 }
 
 .post-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-}
-
-.post-card:before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--primary-color);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: 0;
-}
-
-.post-card:hover:before {
-  opacity: 0.05;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
 .post-image-container {
   position: relative;
   overflow: hidden;
   aspect-ratio: 16 / 9;
-  border-radius: 8px 8px 0 0;
+  border-radius: 10px 10px 0 0;
   width: 100%;
 }
 
@@ -780,26 +756,6 @@ const goBack = () => {
   font-size: 0.9rem;
   color: #718096;
   margin-top: 10px;
-}
-
-/* Animation pour l'entrée des articles */
-.post-list-enter-active {
-  transition: all 0.6s ease;
-  transition-delay: calc(0.1s * var(--i));
-}
-
-.post-list-leave-active {
-  transition: all 0.3s ease;
-}
-
-.post-list-enter-from {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.post-list-leave-to {
-  opacity: 0;
-  transform: translateY(30px);
 }
 
 /* Pour les écrans mobiles */

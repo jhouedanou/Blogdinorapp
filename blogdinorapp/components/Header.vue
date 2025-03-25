@@ -135,37 +135,32 @@ const resetCategoryFilter = () => {
 }
 
 .nav-link {
-  font-size: 1rem;
-  font-weight: 600;
+  color: var(--text-color);
   text-decoration: none;
-  color: var(--text-primary);
-  position: relative;
-  padding: 6px 0;
-  transition: color 0.3s ease;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin: 0 5px;
 }
 
-.nav-link:hover {
-  color: var(--primary);
+.nav-link:hover,
+.nav-link.active {
+  color: var(--primary-color);
+  background-color: var(--background-hover);
 }
 
 .nav-link::after {
   content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
+  display: block;
   width: 0;
   height: 2px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  transition: width 0.3s ease;
+  background: var(--primary-color);
+  margin: 3px auto 0;
 }
 
 .nav-link:hover::after,
 .nav-link.active::after {
   width: 100%;
-}
-
-.nav-link.active {
-  color: var(--primary);
 }
 
 @media (max-width: 768px) {

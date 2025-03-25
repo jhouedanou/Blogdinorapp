@@ -25,8 +25,8 @@
         </div>
         
         <div v-else>
-          <transition-group name="post-list" tag="div" class="posts-grid">
-            <div v-for="(post, index) in filteredPosts" :key="post.id" class="post-card" @click="goToPost(post.slug)" :style="{ '--i': index }">
+          <div class="posts-grid">
+            <div v-for="(post, index) in filteredPosts" :key="post.id" class="post-card" @click="goToPost(post.slug)">
               <div class="post-image-container">
                 <nuxt-img 
                   v-if="post.thumbnail" 
@@ -54,7 +54,7 @@
                 <nuxt-link :to="`/post/${post.slug}`" class="read-more-btn">Lire plus</nuxt-link>
               </div>
             </div>
-          </transition-group>
+          </div>
         </div>
       </div>
     </div>
@@ -282,22 +282,11 @@ useHead({
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   cursor: pointer;
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeInUp 0.5s forwards;
-  animation-delay: calc(var(--i) * 0.1s);
 }
 
 .post-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-@keyframes fadeInUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .post-image-container {
@@ -392,18 +381,6 @@ useHead({
 
 .read-more-btn:hover {
   background-color: var(--dark-goldenrod);
-}
-
-/* Animation pour la liste d'articles */
-.post-list-enter-active,
-.post-list-leave-active {
-  transition: all 0.5s ease;
-}
-
-.post-list-enter-from,
-.post-list-leave-to {
-  opacity: 0;
-  transform: translateY(30px);
 }
 
 /* Styles pour le chargement */

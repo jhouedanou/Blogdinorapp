@@ -56,7 +56,7 @@
         <div class="post-content" v-html="enhancePostContent(post.content)"></div>
           <!-- Section de commentaires -->
           <DisqusComments 
-            :pageUrl="useRequestURL().href"
+            :pageUrl="shareUrl"
             :pageIdentifier="route.path"
           />
         <!-- Boutons de partage -->
@@ -99,7 +99,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useHead, useRequestURL } from '#imports';
+import { useHead } from '#imports';
 import { useRoute } from 'vue-router';
 import useBlog from '../../composables/useBlog';
 import Header from '../../components/Header.vue';
@@ -258,31 +258,46 @@ const keywords = computed(() => {
 });
 
 // Set meta tags
-useHead(() => ({
-  title: post.value ? `${post.value.title} | Dinor App` : 'Chargement...',
-  meta: [
-    { name: 'description', content: metaDescription.value },
-    { name: 'keywords', content: keywords.value },
-    // OpenGraph tags
-    { property: 'og:title', content: post.value?.title },
-    { property: 'og:description', content: metaDescription.value },
-    { property: 'og:type', content: 'article' },
-    { property: 'og:url', content: useRequestURL().href },
-    { property: 'og:image', content: featuredImage.value || '/images/default-thumbnail.jpg' },
-    { property: 'og:site_name', content: 'Dinor App' },
-    // Twitter Card tags
-    { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: post.value?.title },
-    { name: 'twitter:description', content: metaDescription.value },
-    { name: 'twitter:image', content: featuredImage.value || '/images/default-thumbnail.jpg' }
-  ],
-}));
+useHead(() => {
+  // Créer l'URL de manière sécurisée pour SSR et CSR
+  const baseUrl = process.client 
+    ? window.location.origin 
+    : 'https://blogdinor.vercel.app';
+  const currentPath = `/post/${route.params.slug}`;
+  const fullUrl = `${baseUrl}${currentPath}`;
+  
+  return {
+    title: post.value ? `${post.value.title} | Dinor App` : 'Chargement...',
+    meta: [
+      { name: 'description', content: metaDescription.value },
+      { name: 'keywords', content: keywords.value },
+      // OpenGraph tags
+      { property: 'og:title', content: post.value?.title },
+      { property: 'og:description', content: metaDescription.value },
+      { property: 'og:type', content: 'article' },
+      { property: 'og:url', content: fullUrl },
+      { property: 'og:image', content: featuredImage.value || '/images/default-thumbnail.jpg' },
+      { property: 'og:site_name', content: 'Dinor App' },
+      // Twitter Card tags
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: post.value?.title },
+      { name: 'twitter:description', content: metaDescription.value },
+      { name: 'twitter:image', content: featuredImage.value || '/images/default-thumbnail.jpg' }
+    ],
+  };
+});
 
 // Fonction pour partager sur les réseaux sociaux
 const shareUrl = computed(() => {
-  if (!post.value) return ''
-  return useRequestURL().href
-})
+  if (!post.value) return '';
+  
+  // Créer l'URL de manière sécurisée pour SSR et CSR
+  const baseUrl = process.client 
+    ? window.location.origin 
+    : 'https://blogdinor.vercel.app';
+  const currentPath = `/post/${route.params.slug}`;
+  return `${baseUrl}${currentPath}`;
+});
 
 const shareTitle = computed(() => post.value?.title || 'Blog Dinor')
 
@@ -389,7 +404,6 @@ const shareNative = async () => {
   font-size: 14px;
   cursor: pointer;
   margin-left: 10px;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -415,9 +429,8 @@ const shareNative = async () => {
 }
 
 .post-header {
-  margin-bottom: 30px;
-  text-align: center;
   width: 100%;
+  margin-bottom: 30px;
 }
 
 .post-title {
@@ -459,7 +472,6 @@ const shareNative = async () => {
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 500;
-  transition: background-color 0.2s ease;
 }
 
 .category-badge:hover {
@@ -493,7 +505,6 @@ const shareNative = async () => {
 .post-content a {
   color: var(--primary-color);
   text-decoration: underline;
-  transition: color 0.2s ease;
 }
 
 .post-content a:hover {
@@ -528,7 +539,6 @@ const shareNative = async () => {
   height: 100%;
   object-fit: cover;
   object-position: center;
-  transition: transform 0.3s ease;
 }
 
 .post-image-container:hover .post-featured-image {
@@ -614,13 +624,10 @@ const shareNative = async () => {
   border-radius: 5px;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
 }
 
 .refresh-button:hover {
   background-color: var(--secondary);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Pour les écrans mobiles */
@@ -657,7 +664,6 @@ const shareNative = async () => {
   height: 100%;
   background: linear-gradient(to right, var(--primary), var(--secondary));
   width: 0%;
-  transition: width 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
@@ -693,14 +699,8 @@ const shareNative = async () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
   color: white;
   font-weight: bold;
-}
-
-.share-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .facebook {
