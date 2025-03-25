@@ -8,7 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "vercel-build": "npm run build",
+    "vercel-build": "NITRO_PRESET=vercel nuxt build",
     "netlify-build": "NITRO_PRESET=netlify nuxt build"
   },
   "dependencies": {
@@ -19,6 +19,9 @@
     "@nuxtjs/sitemap": "^6.1.2",
     "vue-disqus": "^4.0.1",
     "vue-i18n-routing": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
