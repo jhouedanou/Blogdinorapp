@@ -63,6 +63,9 @@
         <div class="share-container">
           <h3 class="share-title">Partager cet article</h3>
           <div class="share-buttons">
+            <button @click="shareNative" class="share-button native" aria-label="Partager nativement">
+              <span class="share-icon">⇧</span>
+            </button>
             <button @click="shareOnFacebook" class="share-button facebook" aria-label="Partager sur Facebook">
               <span class="share-icon">f</span>
             </button>
@@ -278,29 +281,48 @@ useHead(() => ({
 // Fonction pour partager sur les réseaux sociaux
 const shareUrl = computed(() => {
   if (!post.value) return ''
-  return `https://blogdinor.vercel.app/post/${post.value.slug}`
+  return useRequestURL().href
 })
 
 const shareTitle = computed(() => post.value?.title || 'Blog Dinor')
 
 const shareOnFacebook = () => {
   const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl.value)}`
-  window.open(url, '_blank')
+  window.open(url, '_blank', 'noopener,noreferrer')
 }
 
 const shareOnTwitter = () => {
   const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle.value)}&url=${encodeURIComponent(shareUrl.value)}`
-  window.open(url, '_blank')
+  window.open(url, '_blank', 'noopener,noreferrer')
 }
 
 const shareOnLinkedIn = () => {
   const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl.value)}`
-  window.open(url, '_blank')
+  window.open(url, '_blank', 'noopener,noreferrer')
 }
 
 const shareOnWhatsApp = () => {
-  const url = `https://wa.me/?text=${encodeURIComponent(shareTitle.value + ' ' + shareUrl.value)}`
-  window.open(url, '_blank')
+  const url = `https://wa.me/?text=${encodeURIComponent(`${shareTitle.value} ${shareUrl.value}`)}`
+  window.open(url, '_blank', 'noopener,noreferrer')
+}
+
+// Fonction de partage native (si disponible)
+const shareNative = async () => {
+  if (!process.client) return
+  
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: shareTitle.value,
+        text: metaDescription.value,
+        url: shareUrl.value
+      })
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error('Error sharing:', err)
+      }
+    }
+  }
 }
 </script>
 
@@ -695,6 +717,10 @@ const shareOnWhatsApp = () => {
 
 .whatsapp {
   background-color: #25d366;
+}
+
+.native {
+  background-color: var(--primary);
 }
 
 .share-icon {

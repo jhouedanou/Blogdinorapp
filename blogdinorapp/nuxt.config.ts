@@ -6,6 +6,11 @@ export default defineNuxtConfig({
     '@nuxt/image',
   ],
 
+  ssr: true,
+  nitro: {
+    preset: 'netlify'
+  },
+
   app: {
     head: {
       title: 'Blog de Dinor App',
@@ -43,11 +48,5 @@ export default defineNuxtConfig({
         apiBase: process.env.API_BASE || 'https://bigfive.dev/blogdinor'
       }
     }
-  },
-  // Configuration simplifiée pour Vercel
-  nitro: {
-    preset: 'vercel'
-  },
-  // Assurer que le routage fonctionne correctement
-  ssr: true
+  }
 })
