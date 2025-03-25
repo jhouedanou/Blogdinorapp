@@ -49,6 +49,7 @@
 import { useRouter } from 'vue-router';
 import useBlog from '../composables/useBlog';
 
+const siteName = 'Dinor App';
 const router = useRouter();
 const { setActiveCategory, clearCategoryFilter } = useBlog();
 

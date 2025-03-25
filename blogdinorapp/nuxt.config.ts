@@ -5,10 +5,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/image',
   ],
-  css: [
-    '~/assets/css/colors.css',
-    '~/assets/css/global.css',
-  ],
+
   app: {
     head: {
       title: 'Blog de Dinor App',

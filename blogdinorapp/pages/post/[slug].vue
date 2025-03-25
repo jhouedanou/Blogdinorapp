@@ -54,7 +54,11 @@
         </div>
 
         <div class="post-content" v-html="enhancePostContent(post.content)"></div>
-        
+          <!-- Section de commentaires -->
+          <DisqusComments 
+            :pageUrl="useRequestURL().href"
+            :pageIdentifier="route.path"
+          />
         <!-- Boutons de partage -->
         <div class="share-container">
           <h3 class="share-title">Partager cet article</h3>
@@ -92,11 +96,11 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useHead } from '#imports';
+import { useHead, useRequestURL } from '#imports';
 import { useRoute } from 'vue-router';
 import useBlog from '../../composables/useBlog';
 import Header from '../../components/Header.vue';
-
+import DisqusComments from '../../components/DisqusComments.vue';
 const route = useRoute();
 const { posts, loading, error, fetchPostBySlug, refreshCache } = useBlog();
 const isRefreshing = ref(false);
@@ -230,33 +234,46 @@ const featuredImage = computed(() => {
   return null;
 });
 
-// Métadonnées pour le SEO et Open Graph
-useHead(() => {
-  if (!post.value) return {}
-  
-  const ogImage = featuredImage.value || 'https://blogdinor.vercel.app/images/bg1.jpg'
-  const postUrl = `https://blogdinor.vercel.app/post/${post.value.slug}`
-  
-  return {
-    title: post.value.title,
-    meta: [
-      { name: 'description', content: post.value.excerpt },
-      // Open Graph
-      { property: 'og:title', content: post.value.title },
-      { property: 'og:description', content: post.value.excerpt },
-      { property: 'og:type', content: 'article' },
-      { property: 'og:url', content: postUrl },
-      { property: 'og:image', content: ogImage },
-      { property: 'og:image:width', content: '1200' },
-      { property: 'og:image:height', content: '630' },
-      // Twitter Card
-      { name: 'twitter:card', content: 'summary_large_image' },
-      { name: 'twitter:title', content: post.value.title },
-      { name: 'twitter:description', content: post.value.excerpt },
-      { name: 'twitter:image', content: ogImage },
-    ]
-  }
-})
+// Prepare meta description from content
+const metaDescription = computed(() => {
+  if (!post.value) return '';
+  // Strip HTML tags and get first 160 characters
+  const plainText = post.value.content.replace(/<[^>]*>/g, '');
+  return plainText.substring(0, 160) + (plainText.length > 160 ? '...' : '');
+});
+
+// Extract keywords from content and title
+const keywords = computed(() => {
+  if (!post.value) return '';
+  const allText = `${post.value.title} ${post.value.content.replace(/<[^>]*>/g, '')}`;
+  const words = allText.toLowerCase()
+    .split(/\W+/)
+    .filter(word => word.length > 3)
+    .filter((word, index, self) => self.indexOf(word) === index)
+    .slice(0, 10);
+  return words.join(', ');
+});
+
+// Set meta tags
+useHead(() => ({
+  title: post.value ? `${post.value.title} | Dinor App` : 'Chargement...',
+  meta: [
+    { name: 'description', content: metaDescription.value },
+    { name: 'keywords', content: keywords.value },
+    // OpenGraph tags
+    { property: 'og:title', content: post.value?.title },
+    { property: 'og:description', content: metaDescription.value },
+    { property: 'og:type', content: 'article' },
+    { property: 'og:url', content: useRequestURL().href },
+    { property: 'og:image', content: featuredImage.value || '/images/default-thumbnail.jpg' },
+    { property: 'og:site_name', content: 'Dinor App' },
+    // Twitter Card tags
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:title', content: post.value?.title },
+    { name: 'twitter:description', content: metaDescription.value },
+    { name: 'twitter:image', content: featuredImage.value || '/images/default-thumbnail.jpg' }
+  ],
+}));
 
 // Fonction pour partager sur les réseaux sociaux
 const shareUrl = computed(() => {
