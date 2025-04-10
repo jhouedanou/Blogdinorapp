@@ -8,7 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "vercel-build": "NITRO_PRESET=vercel nuxt build",
+    "vercel-build": "rm -rf .nuxt .output node_modules/.cache && nuxt build",
     "netlify-build": "NITRO_PRESET=netlify nuxt build"
   },
   "dependencies": {

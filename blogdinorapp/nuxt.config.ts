@@ -15,9 +15,17 @@ export default defineNuxtConfig({
   ssr: true,
 
   nitro: {
-    preset: 'vercel'
-  },
+    preset: 'vercel',
 
+    inlineDynamicImports: true,
+    minify: true
+  },
+  
+  // Simplifiez la configuration des assets si possible
+  experimental: {
+    payloadExtraction: false,
+    renderJsonPayloads: false
+  },
   app: {
     head: {
       title: 'Blog de Dinor App',
