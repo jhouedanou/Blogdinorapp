@@ -1,12 +1,29 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "nuxt.config.ts",
-      "use": "@nuxtjs/vercel-builder",
-      "config": {
-        "serverFiles": ["server/**"]
-      }
-    }
-  ]
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "vercel-build": "rm -rf .vercel .nuxt .output node_modules/.cache && nuxt build",
+    "netlify-build": "NITRO_PRESET=netlify nuxt build"
+  },
+  "dependencies": {
+    "@nuxtjs/sitemap": "^6.1.2",
+    "ipx": "^3.0.3",
+    "nuxt": "^3.16.0",
+    "vue": "^3.5.13",
+    "vue-disqus": "^4.0.1",
+    "vue-i18n-routing": "^1.2.0",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }
