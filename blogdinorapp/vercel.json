@@ -1,11 +1,13 @@
 {
   "version": 2,
+  "cleanUrls": true,
   "builds": [
     {
       "src": "nuxt.config.ts",
       "use": "@nuxtjs/vercel-builder",
       "config": {
-        "serverFiles": ["server/**"]
+        "serverFiles": ["server/**"],
+        "generateStaticRoutes": true
       }
     }
   ],
@@ -24,5 +26,10 @@
       "src": "/(.*)",
       "dest": "/"
     }
-  ]
+  ],
+  "build": {
+    "env": {
+      "NITRO_PRESET": "vercel"
+    }
+  }
 }
