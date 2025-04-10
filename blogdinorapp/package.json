@@ -12,7 +12,6 @@
     "netlify-build": "NITRO_PRESET=netlify nuxt build"
   },
   "dependencies": {
-    "@nuxt/image": "^1.9.0",
     "@nuxtjs/sitemap": "^6.1.2",
     "ipx": "^3.0.3",
     "nuxt": "^3.16.0",
