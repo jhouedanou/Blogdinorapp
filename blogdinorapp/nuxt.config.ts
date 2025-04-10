@@ -3,7 +3,8 @@ export default defineNuxtConfig({
   devtools: { enabled: process.env.NODE_ENV !== 'production' },
 
   modules: [
-    '@nuxt/image',
+    // Désactivation temporaire de @nuxt/image pour résoudre l'erreur ipx
+    // '@nuxt/image',
   ],
 
   css: [
@@ -32,6 +33,8 @@ export default defineNuxtConfig({
     baseURL: '/'
   },
 
+  // Commenté temporairement la configuration d'image pour éviter les erreurs ipx
+  /*
   image: {
     domains: ['bigfive.dev', 'secure.gravatar.com'],
     alias: {
@@ -52,6 +55,7 @@ export default defineNuxtConfig({
       xxl: 1536
     }
   },
+  */
 
   runtimeConfig: {
     public: {
