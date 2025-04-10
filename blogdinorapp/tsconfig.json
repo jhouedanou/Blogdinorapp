@@ -1,5 +1,4 @@
 {
-  "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
@@ -8,6 +7,14 @@
     "allowJs": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./*"],
+      "@/*": ["./*"]
+    },
+    "types": ["@nuxt/types"]
+  },
+  "exclude": ["node_modules", ".nuxt", "dist"]
 }
