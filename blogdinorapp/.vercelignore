@@ -1,8 +1,0 @@
-.git
-.nuxt
-node_modules
-.output
-dist
-.netlify
-netlify.toml
-netlify.config.js
