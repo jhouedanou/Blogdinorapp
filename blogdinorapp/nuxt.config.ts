@@ -1,11 +1,6 @@
 import { defineNuxtConfig } from 'nuxt/config'
 export default defineNuxtConfig({
-  // Spécifiez explicitement le mode de sortie pour Vercel
-  output: 'server',
-
   devtools: { enabled: false },
-
-  modules: [],
 
   css: [
     '@/assets/css/colors.css',
@@ -15,13 +10,7 @@ export default defineNuxtConfig({
   ssr: true,
 
   nitro: {
-    preset: 'vercel',
-    // Suppression des options non nécessaires
-  },
-  
-  // Restauration des valeurs par défaut
-  experimental: {
-    // Pas de configuration expérimentale
+    preset: 'vercel'
   },
   
   app: {
@@ -35,9 +24,7 @@ export default defineNuxtConfig({
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
       ]
-    },
-    // Laisser le baseURL simple
-    baseURL: '/'
+    }
   },
 
   runtimeConfig: {

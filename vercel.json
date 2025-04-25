@@ -1,7 +1,5 @@
 {
-  "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": ".output",
+  "framework": "nuxt",
   "routes": [
     {
       "src": "/_nuxt/(.*)",
@@ -10,10 +8,6 @@
     },
     {
       "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
     }
   ]
 }
