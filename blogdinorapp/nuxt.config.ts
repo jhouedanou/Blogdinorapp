@@ -16,16 +16,17 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: 'vercel',
-
-    inlineDynamicImports: true,
-    minify: true
+    // Suppression de ces options qui peuvent causer des problèmes
+    // inlineDynamicImports: true,
+    // minify: true
   },
   
-  // Simplifiez la configuration des assets si possible
+  // Modification des options expérimentales
   experimental: {
-    payloadExtraction: false,
-    renderJsonPayloads: false
+    payloadExtraction: true,  // Activé pour permettre l'extraction des payloads
+    renderJsonPayloads: true  // Activé pour améliorer le rendu sur Vercel
   },
+  
   app: {
     head: {
       title: 'Blog de Dinor App',
@@ -38,6 +39,7 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
       ]
     },
+    // S'assurer que le baseURL est correctement configuré pour Vercel
     baseURL: '/'
   },
 
